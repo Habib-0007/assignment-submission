@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.use(protect)
 
-// Get all users (admin only - for future implementation)
+
 router.get("/", async (req, res, next) => {
   try {
     const users = await User.find().select("-password")
@@ -22,7 +22,7 @@ router.get("/", async (req, res, next) => {
   }
 })
 
-// Get user by ID
+
 router.get("/:id", async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).select("-password")
@@ -40,7 +40,6 @@ router.get("/:id", async (req, res, next) => {
   }
 })
 
-// Update user profile
 router.put("/updateprofile", async (req, res, next) => {
   try {
     const { name, email } = req.body
@@ -63,14 +62,13 @@ router.put("/updateprofile", async (req, res, next) => {
   }
 })
 
-// Update password
 router.put("/updatepassword", async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body
 
     const user = await User.findById(req.user.id).select("+password")
 
-    // Check current password
+
     const isMatch = await user.comparePassword(currentPassword)
 
     if (!isMatch) {

@@ -40,7 +40,6 @@ const submissionSchema = new mongoose.Schema(
   { timestamps: true },
 )
 
-// Ensure a student can only submit once per assignment
 submissionSchema.index({ assignment: 1, student: 1 }, { unique: true })
 
 const Submission = mongoose.model("Submission", submissionSchema)
