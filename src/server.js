@@ -37,6 +37,13 @@ app.use("/api/assignments", assignmentRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/users", userRoutes);
 
+app.use((req, res, next) => {
+  res
+    .status(404)
+    .sendFile(path.join(__dirname, "public", "html", "notfound.html"));
+  // next();
+});
+
 app.use(errorHandler);
 
 mongoose

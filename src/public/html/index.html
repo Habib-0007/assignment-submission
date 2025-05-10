@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment Submission System</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="content"></div>
+    </div>
+
+    <template id="login-template">
+      <div class="auth-container">
+        <div class="auth-card">
+          <h1>Sign In</h1>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Sign In</button>
+          </form>
+          <div class="auth-footer">
+            <p>
+              Don't have an account? <a href="#" id="register-link">Register</a>
+            </p>
+            <p><a href="#" id="forgot-password-link">Forgot password?</a></p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="register-template">
+      <div class="auth-container">
+        <div class="auth-card">
+          <h1>Create Account</h1>
+          <form id="register-form">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="8"
+              />
+            </div>
+            <div class="form-group">
+              <label for="role">Role</label>
+              <select id="role" name="role" required>
+                <option value="student">Student</option>
+                <option value="lecturer">Lecturer</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Create Account
+            </button>
+          </form>
+          <div class="auth-footer">
+            <p>
+              Already have an account? <a href="#" id="login-link">Sign in</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="forgot-password-template">
+      <div class="auth-container">
+        <div class="auth-card">
+          <h1>Reset Password</h1>
+          <p>
+            Enter your email address and we'll send you a link to reset your
+            password.
+          </p>
+          <form id="forgot-password-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Send Reset Link
+            </button>
+          </form>
+          <div class="auth-footer">
+            <p><a href="#" id="back-to-login">Back to login</a></p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="dashboard-template">
+      <div class="dashboard">
+        <header class="header">
+          <div class="header-left">
+            <h1>Submeet</h1>
+          </div>
+          <div class="header-right">
+            <span id="user-name"></span>
+            <button id="logout-btn" class="btn btn-text">Logout</button>
+          </div>
+        </header>
+        <div class="dashboard-container">
+          <nav class="sidebar">
+            <ul class="nav-links">
+              <li>
+                <a href="#" data-page="dashboard" class="active">Dashboard</a>
+              </li>
+              <li class="student-only">
+                <a href="#" data-page="courses">Courses</a>
+              </li>
+              <li class="student-only">
+                <a href="#" data-page="assignments">Assignments</a>
+              </li>
+              <li class="student-only">
+                <a href="#" data-page="submissions">My Submissions</a>
+              </li>
+              <li class="lecturer-only">
+                <a href="#" data-page="my-courses">My Courses</a>
+              </li>
+              <li class="lecturer-only">
+                <a href="#" data-page="my-assignments">My Assignments</a>
+              </li>
+              <li class="lecturer-only">
+                <a href="#" data-page="student-submissions"
+                  >Student Submissions</a
+                >
+              </li>
+              <li><a href="#" data-page="profile">Profile</a></li>
+            </ul>
+          </nav>
+          <main class="main-content">
+            <div id="dashboard-content"></div>
+          </main>
+        </div>
+      </div>
+    </template>
+
+    <template id="dashboard-home-template">
+      <div class="dashboard-home">
+        <h2>Welcome, <span id="welcome-name"></span></h2>
+        <div class="dashboard-stats">
+          <div class="stat-card student-only">
+            <h3>Enrolled Courses</h3>
+            <p id="enrolled-courses-count">0</p>
+          </div>
+          <div class="stat-card student-only">
+            <h3>Pending Assignments</h3>
+            <p id="pending-assignments-count">0</p>
+          </div>
+          <div class="stat-card student-only">
+            <h3>Submitted Assignments</h3>
+            <p id="submitted-assignments-count">0</p>
+          </div>
+          <div class="stat-card lecturer-only">
+            <h3>My Courses</h3>
+            <p id="lecturer-courses-count">0</p>
+          </div>
+          <div class="stat-card lecturer-only">
+            <h3>Active Assignments</h3>
+            <p id="active-assignments-count">0</p>
+          </div>
+          <div class="stat-card lecturer-only">
+            <h3>Pending Reviews</h3>
+            <p id="pending-reviews-count">0</p>
+          </div>
+        </div>
+        <div class="recent-activity">
+          <h3>Recent Activity</h3>
+          <div id="recent-activity-list" class="activity-list">
+            <p class="empty-state">No recent activity</p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="courses-template">
+      <div class="courses-page">
+        <div class="page-header">
+          <h2>Available Courses</h2>
+        </div>
+        <div class="courses-grid" id="courses-grid"></div>
+      </div>
+    </template>
+
+    <template id="course-card-template">
+      <div class="course-card">
+        <h3 class="course-title"></h3>
+        <p class="course-code"></p>
+        <p class="course-description"></p>
+        <p class="course-lecturer"></p>
+        <button class="btn btn-primary enroll-btn">Enroll</button>
+      </div>
+    </template>
+
+    <template id="my-courses-template">
+      <div class="my-courses-page">
+        <div class="page-header">
+          <h2>My Courses</h2>
+          <button id="add-course-btn" class="btn btn-primary">
+            Add Course
+          </button>
+        </div>
+        <div class="courses-grid" id="my-courses-grid"></div>
+      </div>
+    </template>
+
+    <template id="add-course-template">
+      <div class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Add New Course</h2>
+            <button class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="add-course-form">
+              <div class="form-group">
+                <label for="course-title">Title</label>
+                <input type="text" id="course-title" name="title" required />
+              </div>
+              <div class="form-group">
+                <label for="course-code">Code</label>
+                <input type="text" id="course-code" name="code" required />
+              </div>
+              <div class="form-group">
+                <label for="course-description">Description</label>
+                <textarea
+                  id="course-description"
+                  name="description"
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Create Course
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="assignments-template">
+      <div class="assignments-page">
+        <div class="page-header">
+          <h2>Assignments</h2>
+        </div>
+        <div class="assignments-list" id="assignments-list"></div>
+      </div>
+    </template>
+
+    <template id="assignment-card-template">
+      <div class="assignment-card">
+        <div class="assignment-header">
+          <h3 class="assignment-title"></h3>
+          <span class="assignment-course"></span>
+        </div>
+        <p class="assignment-description"></p>
+        <div class="assignment-meta">
+          <p class="assignment-due-date">Due: <span></span></p>
+          <p class="assignment-max-marks">Max Marks: <span></span></p>
+        </div>
+        <button class="btn btn-primary view-assignment-btn">
+          View Details
+        </button>
+      </div>
+    </template>
+
+    <template id="my-assignments-template">
+      <div class="my-assignments-page">
+        <div class="page-header">
+          <h2>My Assignments</h2>
+          <button id="add-assignment-btn" class="btn btn-primary">
+            Add Assignment
+          </button>
+        </div>
+        <div class="assignments-list" id="my-assignments-list"></div>
+      </div>
+    </template>
+
+    <template id="add-assignment-template">
+      <div class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Add New Assignment</h2>
+            <button class="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="add-assignment-form">
+              <div class="form-group">
+                <label for="assignment-title">Title</label>
+                <input
+                  type="text"
+                  id="assignment-title"
+                  name="title"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="assignment-description">Description</label>
+                <textarea
+                  id="assignment-description"
+                  name="description"
+                  required
+                ></textarea>
+              </div>
+              <div class="form-group">
+                <label for="assignment-course">Course</label>
+                <select id="assignment-course" name="course" required></select>
+              </div>
+              <div class="form-group">
+                <label for="assignment-due-date">Due Date</label>
+                <input
+                  type="datetime-local"
+                  id="assignment-due-date"
+                  name="dueDate"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="assignment-max-marks">Maximum Marks</label>
+                <input
+                  type="number"
+                  id="assignment-max-marks"
+                  name="maxMarks"
+                  required
+                  min="1"
+                  value="100"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Create Assignment
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="submissions-template">
+      <div class="submissions-page">
+        <div class="page-header">
+          <h2>My Submissions</h2>
+        </div>
+        <div class="submissions-list" id="submissions-list"></div>
+      </div>
+    </template>
+
+    <template id="submission-card-template">
+      <div class="submission-card">
+        <div class="submission-header">
+          <h3 class="submission-assignment"></h3>
+          <span class="submission-course"></span>
+        </div>
+        <div class="submission-meta">
+          <p class="submission-date">Submitted: <span></span></p>
+          <p class="submission-status">Status: <span></span></p>
+        </div>
+        <div class="submission-marks">
+          <p>Marks: <span></span></p>
+          <p>Feedback: <span></span></p>
+        </div>
+        <button class="btn btn-primary view-submission-btn">
+          View Details
+        </button>
+      </div>
+    </template>
+
+    <template id="student-submissions-template">
+      <div class="student-submissions-page">
+        <div class="page-header">
+          <h2>Student Submissions</h2>
+        </div>
+        <div class="filter-controls">
+          <div class="form-group">
+            <label for="filter-course">Filter by Course</label>
+            <select id="filter-course">
+              <option value="">All Courses</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filter-assignment">Filter by Assignment</label>
+            <select id="filter-assignment">
+              <option value="">All Assignments</option>
+            </select>
+          </div>
+        </div>
+        <div class="submissions-list" id="student-submissions-list"></div>
+      </div>
+    </template>
+
+    <template id="assignment-detail-template">
+      <div class="assignment-detail">
+        <div class="back-link">
+          <a href="#" id="back-to-assignments">&larr; Back to Assignments</a>
+        </div>
+        <div class="assignment-header">
+          <h2 id="detail-assignment-title"></h2>
+          <p id="detail-assignment-course"></p>
+        </div>
+        <div class="assignment-info">
+          <p>
+            <strong>Description:</strong>
+            <span id="detail-assignment-description"></span>
+          </p>
+          <p>
+            <strong>Due Date:</strong>
+            <span id="detail-assignment-due-date"></span>
+          </p>
+          <p>
+            <strong>Maximum Marks:</strong>
+            <span id="detail-assignment-max-marks"></span>
+          </p>
+        </div>
+        <div class="submission-section student-only">
+          <h3>Submit Your Assignment</h3>
+          <form id="submit-assignment-form">
+            <div class="form-group">
+              <label for="submission-text">Answer</label>
+              <textarea
+                id="submission-text"
+                name="textAnswer"
+                rows="6"
+              ></textarea>
+            </div>
+            <div class="form-group">
+              <label for="submission-file">Upload File (PDF only)</label>
+              <input
+                type="file"
+                id="submission-file"
+                name="file"
+                accept="application/pdf"
+              />
+            </div>
+            <button type="submit" class="btn btn-primary">
+              Submit Assignment
+            </button>
+          </form>
+        </div>
+      </div>
+    </template>
+
+    <template id="submission-detail-template">
+      <div class="submission-detail">
+        <div class="back-link">
+          <a href="#" id="back-to-submissions">&larr; Back to Submissions</a>
+        </div>
+        <div class="submission-header">
+          <h2 id="detail-submission-assignment"></h2>
+          <p id="detail-submission-course"></p>
+        </div>
+        <div class="submission-info">
+          <p>
+            <strong>Submitted:</strong>
+            <span id="detail-submission-date"></span>
+          </p>
+          <p>
+            <strong>Status:</strong> <span id="detail-submission-status"></span>
+          </p>
+          <div id="submission-content">
+            <h3>Your Submission</h3>
+            <p id="detail-submission-text"></p>
+            <div id="detail-submission-file"></div>
+          </div>
+          <div id="submission-feedback">
+            <h3>Feedback</h3>
+            <p>
+              <strong>Marks:</strong> <span id="detail-submission-marks"></span>
+            </p>
+            <p>
+              <strong>Comments:</strong>
+              <span id="detail-submission-feedback"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="grade-submission-template">
+      <div class="submission-detail">
+        <div class="back-link">
+          <a href="#" id="back-to-student-submissions"
+            >&larr; Back to Submissions</a
+          >
+        </div>
+        <div class="submission-header">
+          <h2 id="grade-submission-assignment"></h2>
+          <p id="grade-submission-student"></p>
+        </div>
+        <div class="submission-info">
+          <p>
+            <strong>Submitted:</strong> <span id="grade-submission-date"></span>
+          </p>
+          <div id="grade-submission-content">
+            <h3>Student Submission</h3>
+            <p id="grade-submission-text"></p>
+            <div id="grade-submission-file"></div>
+          </div>
+          <div id="grade-form-container">
+            <h3>Grade Submission</h3>
+            <form id="grade-submission-form">
+              <div class="form-group">
+                <label for="grade-marks">Marks</label>
+                <input
+                  type="number"
+                  id="grade-marks"
+                  name="marks"
+                  required
+                  min="0"
+                />
+              </div>
+              <div class="form-group">
+                <label for="grade-feedback">Feedback</label>
+                <textarea
+                  id="grade-feedback"
+                  name="feedback"
+                  rows="4"
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Submit Grade
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="profile-template">
+      <div class="profile-page">
+        <div class="page-header">
+          <h2>Profile</h2>
+        </div>
+        <div class="profile-container">
+          <div class="profile-section">
+            <h3>Personal Information</h3>
+            <form id="update-profile-form">
+              <div class="form-group">
+                <label for="profile-name">Name</label>
+                <input type="text" id="profile-name" name="name" required />
+              </div>
+              <div class="form-group">
+                <label for="profile-email">Email</label>
+                <input type="email" id="profile-email" name="email" required />
+              </div>
+              <div class="form-group">
+                <label for="profile-role">Role</label>
+                <input type="text" id="profile-role" disabled />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Update Profile
+              </button>
+            </form>
+          </div>
+          <div class="profile-section">
+            <h3>Change Password</h3>
+            <form id="change-password-form">
+              <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <input
+                  type="password"
+                  id="current-password"
+                  name="currentPassword"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="new-password">New Password</label>
+                <input
+                  type="password"
+                  id="new-password"
+                  name="newPassword"
+                  required
+                  minlength="8"
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">
+                Change Password
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="loader-template">
+      <div class="loader-container">
+        <span class="loader"></span>
+      </div>
+    </template>
+
+    <template id="page-loader-template">
+      <div class="page-loader">
+        <span class="loader"></span>
+        <p>Loading...</p>
+      </div>
+    </template>
+
+    <template id="skeleton-course-template">
+      <div class="course-card skeleton">
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text short"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text"></div>
+      </div>
+    </template>
+
+    <template id="skeleton-assignment-template">
+      <div class="assignment-card skeleton">
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text short"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text"></div>
+        <div class="skeleton-text"></div>
+      </div>
+    </template>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="modal-container"></div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/router.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
