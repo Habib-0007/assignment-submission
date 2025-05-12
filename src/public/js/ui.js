@@ -1,3 +1,4 @@
+/* 
 const UI = {
   init: () => {
     document.addEventListener("click", (e) => {
@@ -1550,3 +1551,552 @@ const UI = {
     },
   },
 };
+*/
+
+
+
+// UI Controller
+const UI = {
+  // Initialize UI
+  init: () => {
+    // Set up global event listeners
+    document.addEventListener("click", (e) => {
+      // Handle logout button click
+      if (e.target.id === "logout-btn") {
+        e.preventDefault()
+
+        // Add loader to logout button
+        const logoutBtn = e.target
+        const originalText = Utils.addButtonLoader(logoutBtn)
+
+        Auth.logout().finally(() => {
+          Utils.removeButtonLoader(logoutBtn, originalText)
+        })
+      }
+    })
+  },
+
+  // Render template
+  renderTemplate: (templateId, container, data = {}) => {
+    const template = document.getElementById(templateId)
+    if (!template) return
+
+    const content = template.content.cloneNode(true)
+
+    // Replace data placeholders if any
+    if (Object.keys(data).length > 0) {
+      const elements = content.querySelectorAll("[id]")
+      elements.forEach((el) => {
+        const id = el.id
+        if (data[id]) {
+          el.textContent = data[id]
+        }
+      })
+    }
+
+    // Clear container and append content
+    container.innerHTML = ""
+    container.appendChild(content)
+
+    return container.firstElementChild
+  },
+
+  // Auth UI
+  auth: {
+    renderLogin: () => {
+      const content = document.getElementById("content")
+      const loginUI = UI.renderTemplate("login-template", content)
+
+      // Set up form submission
+      const form = loginUI.querySelector("#login-form")
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault()
+
+        // Get form elements
+        const submitBtn = form.querySelector('button[type="submit"]')
+        const emailInput = form.email
+        const passwordInput = form.password
+
+        // Disable form during submission
+        submitBtn.disabled = true
+        emailInput.disabled = true
+        passwordInput.disabled = true
+
+        // Add loader to button
+        Utils.addButtonLoader(submitBtn)
+
+        try {
+          const email = emailInput.value
+          const password = passwordInput.value
+
+          await Auth.login({ email, password })
+          Router.navigate("dashboard")
+          Utils.showToast("Logged in successfully")
+        } catch (error) {
+          Utils.showToast(error.message, "error")
+        } finally {
+          // Re-enable form
+          submitBtn.disabled = false
+          emailInput.disabled = false
+          passwordInput.disabled = false
+
+          // Remove loader
+          Utils.removeButtonLoader(submitBtn, "Sign In")
+        }
+      })
+
+      // Set up register link
+      const registerLink = loginUI.querySelector("#register-link")
+      registerLink.addEventListener("click", (e) => {
+        e.preventDefault()
+        Router.navigate("register")
+      })
+
+      // Set up forgot password link
+      const forgotPasswordLink = loginUI.querySelector("#forgot-password-link")
+      forgotPasswordLink.addEventListener("click", (e) => {
+        e.preventDefault()
+        Router.navigate("forgot-password")
+      })
+    },
+
+    renderRegister: () => {
+      const content = document.getElementById("content")
+      const registerUI = UI.renderTemplate("register-template", content)
+
+      // Set up form submission
+      const form = registerUI.querySelector("#register-form")
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault()
+
+        // Get form elements
+        const submitBtn = form.querySelector('button[type="submit"]')
+        const formInputs = form.querySelectorAll("input, select")
+
+        // Disable form during submission
+        submitBtn.disabled = true
+        formInputs.forEach((input) => (input.disabled = true))
+
+        // Add loader to button
+        Utils.addButtonLoader(submitBtn)
+
+        try {
+          const name = form.name.value
+          const email = form.email.value
+          const password = form.password.value
+          const role = form.role.value
+
+          await Auth.register({ name, email, password, role })
+          Router.navigate("dashboard")
+          Utils.showToast("Account created successfully")
+        } catch (error) {
+          Utils.showToast(error.message, "error")
+        } finally {
+          // Re-enable form
+          submitBtn.disabled = false
+          formInputs.forEach((input) => (input.disabled = false))
+
+          // Remove loader
+          Utils.removeButtonLoader(submitBtn, "Create Account")
+        }
+      })
+
+      // Set up login link
+      const loginLink = registerUI.querySelector("#login-link")
+      loginLink.addEventListener("click", (e) => {
+        e.preventDefault()
+        Router.navigate("login")
+      })
+    },
+
+    renderForgotPassword: () => {
+      const content = document.getElementById("content")
+      const forgotPasswordUI = UI.renderTemplate("forgot-password-template", content)
+
+      // Set up form submission
+      const form = forgotPasswordUI.querySelector("#forgot-password-form")
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault()
+
+        // Get form elements
+        const submitBtn = form.querySelector('button[type="submit"]')
+        const emailInput = form.email
+
+        // Disable form during submission
+        submitBtn.disabled = true
+        emailInput.disabled = true
+
+        // Add loader to button
+        Utils.addButtonLoader(submitBtn)
+
+        try {
+          const email = emailInput.value
+
+          await Auth.forgotPassword(email)
+          Utils.showToast("Password reset email sent")
+          Router.navigate("login")
+        } catch (error) {
+          Utils.showToast(error.message, "error")
+        } finally {
+          // Re-enable form
+          submitBtn.disabled = false
+          emailInput.disabled = false
+
+          // Remove loader
+          Utils.removeButtonLoader(submitBtn, "Send Reset Link")
+        }
+      })
+
+      // Set up back to login link
+      const backToLoginLink = forgotPasswordUI.querySelector("#back-to-login")
+      backToLoginLink.addEventListener("click", (e) => {
+        e.preventDefault()
+        Router.navigate("login")
+      })
+    },
+  },
+
+  // Dashboard UI
+  dashboard: {
+    renderDashboard: async () => {
+      const content = document.getElementById("content")
+      const dashboardUI = UI.renderTemplate("dashboard-template", content)
+
+      // Set user name in header
+      const userNameEl = dashboardUI.querySelector("#user-name")
+      userNameEl.textContent = Auth.user.name
+
+      // Set up navigation
+      const navLinks = dashboardUI.querySelectorAll(".nav-links a")
+      navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault()
+
+          // Remove active class from all links
+          navLinks.forEach((l) => l.classList.remove("active"))
+
+          // Add active class to clicked link
+          e.target.classList.add("active")
+
+          // Navigate to page
+          const page = e.target.getAttribute("data-page")
+          UI.dashboard.renderPage(page)
+        })
+      })
+
+      // Render dashboard home by default
+      UI.dashboard.renderPage("dashboard")
+    },
+
+    // Update the renderPage method to ensure clean transitions
+    renderPage: (page) => {
+      const dashboardContent = document.getElementById("dashboard-content")
+
+      // Clear any existing content first
+      dashboardContent.innerHTML = ""
+
+      // Show page loader
+      Utils.showPageLoader(dashboardContent, `Loading ${page}...`)
+
+      // Render page after a short delay to show loader
+      setTimeout(() => {
+        switch (page) {
+          case "dashboard":
+            UI.dashboard.renderHome(dashboardContent)
+            break
+          case "courses":
+            UI.courses.renderCourses(dashboardContent)
+            break
+          case "assignments":
+            UI.assignments.renderAssignments(dashboardContent)
+            break
+          case "submissions":
+            UI.submissions.renderSubmissions(dashboardContent)
+            break
+          case "my-courses":
+            UI.courses.renderMyCourses(dashboardContent)
+            break
+          case "my-assignments":
+            UI.assignments.renderMyAssignments(dashboardContent)
+            break
+          case "student-submissions":
+            UI.submissions.renderStudentSubmissions(dashboardContent)
+            break
+          case "profile":
+            UI.profile.renderProfile(dashboardContent)
+            break
+          default:
+            UI.dashboard.renderHome(dashboardContent)
+        }
+      }, 300) // Short delay to show loader
+    },
+
+    // Update the dashboard.renderHome method to properly handle loading states
+    renderHome: async (container) => {
+      // Show page loader first
+      Utils.showPageLoader(container, "Loading dashboard...")
+
+      // Create the UI but don't append it yet
+      const homeUI = document.createElement("div")
+      homeUI.innerHTML = document.getElementById("dashboard-home-template").content.cloneNode(true).innerHTML
+
+      try {
+        // Set welcome name
+        const welcomeNameEl = homeUI.querySelector("#welcome-name")
+        welcomeNameEl.textContent = Auth.user.name
+
+        if (Auth.user.role === "student") {
+          // Get student stats
+          const enrolledCourses = await API.courses.getEnrolled()
+          const assignments = await API.assignments.getAll()
+          const submissions = await API.submissions.getAll()
+
+          // Update stats
+          homeUI.querySelector("#enrolled-courses-count").textContent = enrolledCourses.data.length
+
+          const pendingAssignments = assignments.data.filter((assignment) => {
+            return !submissions.data.some((submission) => submission.assignment._id === assignment._id)
+          })
+
+          homeUI.querySelector("#pending-assignments-count").textContent = pendingAssignments.length
+          homeUI.querySelector("#submitted-assignments-count").textContent = submissions.data.length
+        } else if (Auth.user.role === "lecturer") {
+          // Get lecturer stats
+          const courses = await API.courses.getAll()
+          const assignments = await API.assignments.getAll()
+          const submissions = await API.submissions.getAll()
+
+          // Update stats
+          homeUI.querySelector("#lecturer-courses-count").textContent = courses.data.length
+          homeUI.querySelector("#active-assignments-count").textContent = assignments.data.length
+
+          const pendingReviews = submissions.data.filter((submission) => submission.marks === null)
+
+          homeUI.querySelector("#pending-reviews-count").textContent = pendingReviews.length
+        }
+
+        // Render recent activity (simplified for now)
+        const activityList = homeUI.querySelector("#recent-activity-list")
+        activityList.innerHTML = '<p class="empty-state">No recent activity</p>'
+
+        // Now that everything is loaded, clear the container and add the content
+        container.innerHTML = ""
+        homeUI.classList.add("content-loaded")
+        container.appendChild(homeUI)
+      } catch (error) {
+        console.error("Error loading dashboard data:", error)
+        Utils.showToast("Error loading dashboard data", "error")
+
+        // Show error state in container
+        container.innerHTML = '<p class="empty-state">Failed to load dashboard data. Please try again.</p>'
+      }
+    },
+  },
+
+  // Courses UI
+  courses: {
+    // Update the courses.renderCourses method to properly handle loading states
+    renderCourses: async (container) => {
+      // Clear container and show loader
+      container.innerHTML = ""
+      Utils.showPageLoader(container, "Loading courses...")
+
+      // Create UI structure but don't append yet
+      const coursesUI = document.createElement("div")
+      coursesUI.innerHTML = document.getElementById("courses-template").content.cloneNode(true).innerHTML
+      const coursesGrid = coursesUI.querySelector("#courses-grid")
+
+      try {
+        const response = await API.courses.getAll()
+
+        if (response.data.length === 0) {
+          coursesGrid.innerHTML = '<p class="empty-state">No courses available</p>'
+        } else {
+          coursesGrid.innerHTML = ""
+
+          response.data.forEach((course) => {
+            const courseTemplate = document.getElementById("course-card-template")
+            const courseCard = courseTemplate.content.cloneNode(true)
+
+            courseCard.querySelector(".course-title").textContent = course.title
+            courseCard.querySelector(".course-code").textContent = `Code: ${course.code}`
+            courseCard.querySelector(".course-description").textContent = Utils.truncateText(course.description, 150)
+
+            const lecturerName = course.lecturer.name || "Unknown"
+            courseCard.querySelector(".course-lecturer").textContent = `Lecturer: ${lecturerName}`
+
+            const enrollBtn = courseCard.querySelector(".enroll-btn")
+
+            // Check if already enrolled
+            const isEnrolled = course.students.some((student) => student._id === Auth.user.id)
+
+            if (isEnrolled) {
+              enrollBtn.textContent = "Enrolled"
+              enrollBtn.disabled = true
+              enrollBtn.classList.add("btn-disabled")
+            } else {
+              enrollBtn.addEventListener("click", async (e) => {
+                // Add loader to button
+                const originalText = Utils.addButtonLoader(enrollBtn)
+
+                try {
+                  await API.courses.enroll(course._id)
+                  Utils.showToast(`Enrolled in ${course.title} successfully`)
+                  UI.courses.renderCourses(container)
+                } catch (error) {
+                  Utils.showToast(error.message, "error")
+                  // Remove loader if error
+                  Utils.removeButtonLoader(enrollBtn, originalText)
+                }
+              })
+            }
+
+            coursesGrid.appendChild(courseCard)
+          })
+        }
+
+        // Now that everything is loaded, clear the container and add the content
+        container.innerHTML = ""
+        coursesUI.classList.add("content-loaded")
+        container.appendChild(coursesUI)
+      } catch (error) {
+        console.error("Error loading courses:", error)
+        Utils.showToast("Error loading courses", "error")
+        container.innerHTML = '<p class="empty-state">Failed to load courses</p>'
+      }
+    },
+
+    renderMyCourses: async (container) => {
+      // Clear container and show loader
+      container.innerHTML = ""
+      Utils.showPageLoader(container, "Loading your courses...")
+
+      // Create UI structure but don't append yet
+      const myCoursesUI = document.createElement("div")
+      myCoursesUI.innerHTML = document.getElementById("my-courses-template").content.cloneNode(true).innerHTML
+      const myCoursesGrid = myCoursesUI.querySelector("#my-courses-grid")
+
+      try {
+        const response = await API.courses.getAll()
+
+        // Clear any existing content
+        myCoursesGrid.innerHTML = ""
+
+        if (response.data.length === 0) {
+          myCoursesGrid.innerHTML = '<p class="empty-state">You have no courses yet</p>'
+        } else {
+          response.data.forEach((course) => {
+            const courseTemplate = document.getElementById("course-card-template")
+            const courseCard = courseTemplate.content.cloneNode(true)
+
+            courseCard.querySelector(".course-title").textContent = course.title
+            courseCard.querySelector(".course-code").textContent = `Code: ${course.code}`
+            courseCard.querySelector(".course-description").textContent = Utils.truncateText(course.description, 150)
+
+            // Show student count instead of lecturer
+            const studentCount = course.students ? course.students.length : 0
+            courseCard.querySelector(".course-lecturer").textContent = `Students: ${studentCount}`
+
+            // Replace enroll button with view button
+            const enrollBtn = courseCard.querySelector(".enroll-btn")
+            enrollBtn.textContent = "View Details"
+            enrollBtn.classList.remove("enroll-btn")
+            enrollBtn.classList.add("view-course-btn")
+
+            enrollBtn.addEventListener("click", async () => {
+              // Add loader to button
+              Utils.addButtonLoader(enrollBtn)
+
+              // Implement course details view
+              try {
+                const courseDetails = await API.courses.getOne(course._id)
+                UI.courses.renderCourseDetails(container, courseDetails.data)
+              } catch (error) {
+                Utils.showToast(error.message, "error")
+                // Remove loader if error
+                Utils.removeButtonLoader(enrollBtn, "View Details")
+              }
+            })
+
+            myCoursesGrid.appendChild(courseCard)
+          })
+        }
+
+        // Set up add course button - ALWAYS add this regardless of whether there are courses or not
+        const addCourseBtn = myCoursesUI.querySelector("#add-course-btn")
+        if (addCourseBtn) {
+          addCourseBtn.addEventListener("click", () => {
+            Utils.showModal("add-course-template", (modal) => {
+              const form = modal.querySelector("#add-course-form")
+
+              form.addEventListener("submit", async (e) => {
+                e.preventDefault()
+
+                // Get form elements
+                const submitBtn = form.querySelector('button[type="submit"]')
+                const formInputs = form.querySelectorAll("input, textarea")
+
+                // Validate form
+                if (!form.title.value || !form.code.value) {
+                  Utils.showToast("Please fill in all required fields", "error")
+                  return
+                }
+
+                // Disable form during submission
+                submitBtn.disabled = true
+                formInputs.forEach((input) => (input.disabled = true))
+
+                // Add loader to button
+                Utils.addButtonLoader(submitBtn)
+
+                try {
+                  const courseData = {
+                    title: form.title.value,
+                    code: form.code.value,
+                    description: form.description.value || "",
+                  }
+
+                  await API.courses.create(courseData)
+                  Utils.showToast("Course created successfully")
+                  modal.innerHTML = ""
+
+                  // Show loader in container
+                  Utils.showPageLoader(container, "Refreshing courses...")
+
+                  // Refresh courses list after a short delay
+                  setTimeout(() => {
+                    UI.courses.renderMyCourses(container)
+                  }, 500)
+                } catch (error) {
+                  console.error("Error creating course:", error)
+                  Utils.showToast(error.message || "Error creating course", "error")
+
+                  // Re-enable form
+                  submitBtn.disabled = false
+                  formInputs.forEach((input) => (input.disabled = false))
+
+                  // Remove loader
+                  Utils.removeButtonLoader(submitBtn, "Create Course")
+                }
+              })
+            })
+          })
+        } else {
+          console.error("Add course button not found in the template")
+        }
+
+        // Now that everything is loaded, clear the container and add the content
+        container.innerHTML = ""
+        myCoursesUI.classList.add("content-loaded")
+        container.appendChild(myCoursesUI)
+      } catch (error) {
+        console.error("Error loading courses:", error)
+        Utils.showToast("Error loading courses", "error")
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>Failed to load courses</p>
+            <button id="retry-load-courses" class="btn btn-primary">Retry</button>
+          </div>
+        `
+
+        // A
