@@ -1,560 +1,482 @@
-// UI Controller
 const UI = {
-  // Initialize UI
   init: () => {
-    // Set up global event listeners
     document.addEventListener("click", (e) => {
-      // Handle logout button click
       if (e.target.id === "logout-btn") {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Add loader to logout button
-        const logoutBtn = e.target
-        const originalText = Utils.addButtonLoader(logoutBtn)
+        const logoutBtn = e.target;
+        const originalText = Utils.addButtonLoader(logoutBtn);
 
         Auth.logout().finally(() => {
-          Utils.removeButtonLoader(logoutBtn, originalText)
-        })
+          Utils.removeButtonLoader(logoutBtn, originalText);
+        });
       }
-    })
+    });
   },
 
-  // Render template
   renderTemplate: (templateId, container, data = {}) => {
-    const template = document.getElementById(templateId)
-    if (!template) return
+    const template = document.getElementById(templateId);
+    if (!template) return;
 
-    const content = template.content.cloneNode(true)
+    const content = template.content.cloneNode(true);
 
-    // Replace data placeholders if any
     if (Object.keys(data).length > 0) {
-      const elements = content.querySelectorAll("[id]")
+      const elements = content.querySelectorAll("[id]");
       elements.forEach((el) => {
-        const id = el.id
+        const id = el.id;
         if (data[id]) {
-          el.textContent = data[id]
+          el.textContent = data[id];
         }
-      })
+      });
     }
 
-    // Clear container and append content
-    container.innerHTML = ""
-    container.appendChild(content)
+    container.innerHTML = "";
+    container.appendChild(content);
 
-    return container.firstElementChild
+    return container.firstElementChild;
   },
 
-  // Auth UI
   auth: {
     renderLogin: () => {
-      const content = document.getElementById("content")
-      const loginUI = UI.renderTemplate("login-template", content)
+      const content = document.getElementById("content");
+      const loginUI = UI.renderTemplate("login-template", content);
 
-      // Set up form submission
-      const form = loginUI.querySelector("#login-form")
+      const form = loginUI.querySelector("#login-form");
       form.addEventListener("submit", async (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Get form elements
-        const submitBtn = form.querySelector('button[type="submit"]')
-        const emailInput = form.email
-        const passwordInput = form.password
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const emailInput = form.email;
+        const passwordInput = form.password;
 
-        // Disable form during submission
-        submitBtn.disabled = true
-        emailInput.disabled = true
-        passwordInput.disabled = true
+        submitBtn.disabled = true;
+        emailInput.disabled = true;
+        passwordInput.disabled = true;
 
-        // Add loader to button
-        Utils.addButtonLoader(submitBtn)
+        Utils.addButtonLoader(submitBtn);
 
         try {
-          const email = emailInput.value
-          const password = passwordInput.value
+          const email = emailInput.value;
+          const password = passwordInput.value;
 
-          await Auth.login({ email, password })
-          Router.navigate("dashboard")
-          Utils.showToast("Logged in successfully")
+          await Auth.login({ email, password });
+          Router.navigate("dashboard");
+          Utils.showToast("Logged in successfully");
         } catch (error) {
-          Utils.showToast(error.message, "error")
+          Utils.showToast(error.message, "error");
         } finally {
-          // Re-enable form
-          submitBtn.disabled = false
-          emailInput.disabled = false
-          passwordInput.disabled = false
+          submitBtn.disabled = false;
+          emailInput.disabled = false;
+          passwordInput.disabled = false;
 
-          // Remove loader
-          Utils.removeButtonLoader(submitBtn, "Sign In")
+          Utils.removeButtonLoader(submitBtn, "Sign In");
         }
-      })
+      });
 
-      // Set up register link
-      const registerLink = loginUI.querySelector("#register-link")
+      const registerLink = loginUI.querySelector("#register-link");
       registerLink.addEventListener("click", (e) => {
-        e.preventDefault()
-        Router.navigate("register")
-      })
+        e.preventDefault();
+        Router.navigate("register");
+      });
 
-      // Set up forgot password link
-      const forgotPasswordLink = loginUI.querySelector("#forgot-password-link")
+      const forgotPasswordLink = loginUI.querySelector("#forgot-password-link");
       forgotPasswordLink.addEventListener("click", (e) => {
-        e.preventDefault()
-        Router.navigate("forgot-password")
-      })
+        e.preventDefault();
+        Router.navigate("forgot-password");
+      });
     },
 
     renderRegister: () => {
-      const content = document.getElementById("content")
-      const registerUI = UI.renderTemplate("register-template", content)
+      const content = document.getElementById("content");
+      const registerUI = UI.renderTemplate("register-template", content);
 
-      // Set up form submission
-      const form = registerUI.querySelector("#register-form")
+      const form = registerUI.querySelector("#register-form");
       form.addEventListener("submit", async (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Get form elements
-        const submitBtn = form.querySelector('button[type="submit"]')
-        const formInputs = form.querySelectorAll("input, select")
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const formInputs = form.querySelectorAll("input, select");
 
-        // Disable form during submission
-        submitBtn.disabled = true
-        formInputs.forEach((input) => (input.disabled = true))
+        submitBtn.disabled = true;
+        formInputs.forEach((input) => (input.disabled = true));
 
-        // Add loader to button
-        Utils.addButtonLoader(submitBtn)
+        Utils.addButtonLoader(submitBtn);
 
         try {
-          const name = form.name.value
-          const email = form.email.value
-          const password = form.password.value
-          const role = form.role.value
+          const name = form.name.value;
+          const email = form.email.value;
+          const password = form.password.value;
+          const role = form.role.value;
 
-          await Auth.register({ name, email, password, role })
-          Router.navigate("dashboard")
-          Utils.showToast("Account created successfully")
+          await Auth.register({ name, email, password, role });
+          Router.navigate("dashboard");
+          Utils.showToast("Account created successfully");
         } catch (error) {
-          Utils.showToast(error.message, "error")
+          Utils.showToast(error.message, "error");
         } finally {
-          // Re-enable form
-          submitBtn.disabled = false
-          formInputs.forEach((input) => (input.disabled = false))
+          submitBtn.disabled = false;
+          formInputs.forEach((input) => (input.disabled = false));
 
-          // Remove loader
-          Utils.removeButtonLoader(submitBtn, "Create Account")
+          Utils.removeButtonLoader(submitBtn, "Create Account");
         }
-      })
+      });
 
-      // Set up login link
-      const loginLink = registerUI.querySelector("#login-link")
+      const loginLink = registerUI.querySelector("#login-link");
       loginLink.addEventListener("click", (e) => {
-        e.preventDefault()
-        Router.navigate("login")
-      })
+        e.preventDefault();
+        Router.navigate("login");
+      });
     },
 
     renderForgotPassword: () => {
-      const content = document.getElementById("content")
-      const forgotPasswordUI = UI.renderTemplate("forgot-password-template", content)
+      const content = document.getElementById("content");
+      const forgotPasswordUI = UI.renderTemplate(
+        "forgot-password-template",
+        content
+      );
 
-      // Set up form submission
-      const form = forgotPasswordUI.querySelector("#forgot-password-form")
+      const form = forgotPasswordUI.querySelector("#forgot-password-form");
       form.addEventListener("submit", async (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
-        // Get form elements
-        const submitBtn = form.querySelector('button[type="submit"]')
-        const emailInput = form.email
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const emailInput = form.email;
 
-        // Disable form during submission
-        submitBtn.disabled = true
-        emailInput.disabled = true
+        submitBtn.disabled = true;
+        emailInput.disabled = true;
 
-        // Add loader to button
-        Utils.addButtonLoader(submitBtn)
+        Utils.addButtonLoader(submitBtn);
 
         try {
-          const email = emailInput.value
+          const email = emailInput.value;
 
-          await Auth.forgotPassword(email)
-          Utils.showToast("Password reset email sent")
-          Router.navigate("login")
+          await Auth.forgotPassword(email);
+          Utils.showToast("Password reset email sent");
+          Router.navigate("login");
         } catch (error) {
-          Utils.showToast(error.message, "error")
+          Utils.showToast(error.message, "error");
         } finally {
-          // Re-enable form
-          submitBtn.disabled = false
-          emailInput.disabled = false
+          submitBtn.disabled = false;
+          emailInput.disabled = false;
 
-          // Remove loader
-          Utils.removeButtonLoader(submitBtn, "Send Reset Link")
+          Utils.removeButtonLoader(submitBtn, "Send Reset Link");
         }
-      })
+      });
 
-      // Set up back to login link
-      const backToLoginLink = forgotPasswordUI.querySelector("#back-to-login")
+      const backToLoginLink = forgotPasswordUI.querySelector("#back-to-login");
       backToLoginLink.addEventListener("click", (e) => {
-        e.preventDefault()
-        Router.navigate("login")
-      })
+        e.preventDefault();
+        Router.navigate("login");
+      });
     },
   },
 
-  // Dashboard UI
   dashboard: {
     renderDashboard: async () => {
-      const content = document.getElementById("content")
-      const dashboardUI = UI.renderTemplate("dashboard-template", content)
+      const content = document.getElementById("content");
+      const dashboardUI = UI.renderTemplate("dashboard-template", content);
 
-      // Set user name in header
-      const userNameEl = dashboardUI.querySelector("#user-name")
-      userNameEl.textContent = Auth.user.name
+      const userNameEl = dashboardUI.querySelector("#user-name");
+      userNameEl.textContent = Auth.user.name;
 
-      // Set up navigation
-      const navLinks = dashboardUI.querySelectorAll(".nav-links a")
+      const navLinks = dashboardUI.querySelectorAll(".nav-links a");
       navLinks.forEach((link) => {
         link.addEventListener("click", (e) => {
-          e.preventDefault()
+          e.preventDefault();
 
-          // Remove active class from all links
-          navLinks.forEach((l) => l.classList.remove("active"))
+          navLinks.forEach((l) => l.classList.remove("active"));
 
-          // Add active class to clicked link
-          e.target.classList.add("active")
+          e.target.classList.add("active");
 
-          // Navigate to page
-          const page = e.target.getAttribute("data-page")
-          UI.dashboard.renderPage(page)
-        })
-      })
+          const page = e.target.getAttribute("data-page");
+          UI.dashboard.renderPage(page);
+        });
+      });
 
-      // Render dashboard home by default
-      UI.dashboard.renderPage("dashboard")
+      UI.dashboard.renderPage("dashboard");
     },
 
-    // Update the renderPage method to ensure clean transitions
     renderPage: (page) => {
-      const dashboardContent = document.getElementById("dashboard-content")
+      const dashboardContent = document.getElementById("dashboard-content");
 
-      // Clear any existing content first
-      dashboardContent.innerHTML = ""
+      Utils.showPageLoader(dashboardContent, `Loading ${page}...`);
 
-      // Show page loader
-      Utils.showPageLoader(dashboardContent, `Loading ${page}...`)
-
-      // Render page after a short delay to show loader
       setTimeout(() => {
         switch (page) {
           case "dashboard":
-            UI.dashboard.renderHome(dashboardContent)
-            break
+            UI.dashboard.renderHome(dashboardContent);
+            break;
           case "courses":
-            UI.courses.renderCourses(dashboardContent)
-            break
+            UI.courses.renderCourses(dashboardContent);
+            break;
           case "assignments":
-            UI.assignments.renderAssignments(dashboardContent)
-            break
+            UI.assignments.renderAssignments(dashboardContent);
+            break;
           case "submissions":
-            UI.submissions.renderSubmissions(dashboardContent)
-            break
+            UI.submissions.renderSubmissions(dashboardContent);
+            break;
           case "my-courses":
-            UI.courses.renderMyCourses(dashboardContent)
-            break
+            UI.courses.renderMyCourses(dashboardContent);
+            break;
           case "my-assignments":
-            UI.assignments.renderMyAssignments(dashboardContent)
-            break
+            UI.assignments.renderMyAssignments(dashboardContent);
+            break;
           case "student-submissions":
-            UI.submissions.renderStudentSubmissions(dashboardContent)
-            break
+            UI.submissions.renderStudentSubmissions(dashboardContent);
+            break;
           case "profile":
-            UI.profile.renderProfile(dashboardContent)
-            break
+            UI.profile.renderProfile(dashboardContent);
+            break;
           default:
-            UI.dashboard.renderHome(dashboardContent)
+            UI.dashboard.renderHome(dashboardContent);
         }
-      }, 300) // Short delay to show loader
+      }, 300);
     },
 
-    // Update the dashboard.renderHome method to properly handle loading states
     renderHome: async (container) => {
-      // Show page loader first
-      Utils.showPageLoader(container, "Loading dashboard...")
+      const homeUI = UI.renderTemplate("dashboard-home-template", container);
 
-      // Create the UI but don't append it yet
-      const homeUI = document.createElement("div")
-      homeUI.innerHTML = document.getElementById("dashboard-home-template").content.cloneNode(true).innerHTML
+      const welcomeNameEl = homeUI.querySelector("#welcome-name");
+      welcomeNameEl.textContent = Auth.user.name;
+
+      const loader = Utils.showLoader(container);
 
       try {
-        // Set welcome name
-        const welcomeNameEl = homeUI.querySelector("#welcome-name")
-        welcomeNameEl.textContent = Auth.user.name
-
         if (Auth.user.role === "student") {
-          // Get student stats
-          const enrolledCourses = await API.courses.getEnrolled()
-          const assignments = await API.assignments.getAll()
-          const submissions = await API.submissions.getAll()
+          const enrolledCourses = await API.courses.getEnrolled();
+          const assignments = await API.assignments.getAll();
+          const submissions = await API.submissions.getAll();
 
-          // Update stats
-          homeUI.querySelector("#enrolled-courses-count").textContent = enrolledCourses.data.length
+          homeUI.querySelector("#enrolled-courses-count").textContent =
+            enrolledCourses.data.length;
 
           const pendingAssignments = assignments.data.filter((assignment) => {
-            return !submissions.data.some((submission) => submission.assignment._id === assignment._id)
-          })
+            return !submissions.data.some(
+              (submission) => submission.assignment._id === assignment._id
+            );
+          });
 
-          homeUI.querySelector("#pending-assignments-count").textContent = pendingAssignments.length
-          homeUI.querySelector("#submitted-assignments-count").textContent = submissions.data.length
+          homeUI.querySelector("#pending-assignments-count").textContent =
+            pendingAssignments.length;
+          homeUI.querySelector("#submitted-assignments-count").textContent =
+            submissions.data.length;
         } else if (Auth.user.role === "lecturer") {
-          // Get lecturer stats
-          const courses = await API.courses.getAll()
-          const assignments = await API.assignments.getAll()
-          const submissions = await API.submissions.getAll()
+          const courses = await API.courses.getAll();
+          const assignments = await API.assignments.getAll();
+          const submissions = await API.submissions.getAll();
 
-          // Update stats
-          homeUI.querySelector("#lecturer-courses-count").textContent = courses.data.length
-          homeUI.querySelector("#active-assignments-count").textContent = assignments.data.length
+          homeUI.querySelector("#lecturer-courses-count").textContent =
+            courses.data.length;
+          homeUI.querySelector("#active-assignments-count").textContent =
+            assignments.data.length;
 
-          const pendingReviews = submissions.data.filter((submission) => submission.marks === null)
+          const pendingReviews = submissions.data.filter(
+            (submission) => submission.marks === null
+          );
 
-          homeUI.querySelector("#pending-reviews-count").textContent = pendingReviews.length
+          homeUI.querySelector("#pending-reviews-count").textContent =
+            pendingReviews.length;
         }
 
-        // Render recent activity (simplified for now)
-        const activityList = homeUI.querySelector("#recent-activity-list")
-        activityList.innerHTML = '<p class="empty-state">No recent activity</p>'
-
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        homeUI.classList.add("content-loaded")
-        container.appendChild(homeUI)
+        const activityList = homeUI.querySelector("#recent-activity-list");
+        activityList.innerHTML =
+          '<p class="empty-state">No recent activity</p>';
       } catch (error) {
-        console.error("Error loading dashboard data:", error)
-        Utils.showToast("Error loading dashboard data", "error")
-
-        // Show error state in container
-        container.innerHTML = '<p class="empty-state">Failed to load dashboard data. Please try again.</p>'
+        console.error("Error loading dashboard data:", error);
+        Utils.showToast("Error loading dashboard data", "error");
+      } finally {
+        Utils.removeLoader(container);
       }
     },
   },
 
-  // Courses UI
   courses: {
-    // Update the courses.renderCourses method to properly handle loading states
     renderCourses: async (container) => {
-      // Clear container and show loader
-      container.innerHTML = ""
-      Utils.showPageLoader(container, "Loading courses...")
+      const coursesUI = UI.renderTemplate("courses-template", container);
+      const coursesGrid = coursesUI.querySelector("#courses-grid");
 
-      // Create UI structure but don't append yet
-      const coursesUI = document.createElement("div")
-      coursesUI.innerHTML = document.getElementById("courses-template").content.cloneNode(true).innerHTML
-      const coursesGrid = coursesUI.querySelector("#courses-grid")
+      Utils.showSkeletonLoading(coursesGrid, "skeleton-course-template", 6);
 
       try {
-        const response = await API.courses.getAll()
+        const response = await API.courses.getAll();
+
+        coursesGrid.innerHTML = "";
 
         if (response.data.length === 0) {
-          coursesGrid.innerHTML = '<p class="empty-state">No courses available</p>'
-        } else {
-          coursesGrid.innerHTML = ""
-
-          response.data.forEach((course) => {
-            const courseTemplate = document.getElementById("course-card-template")
-            const courseCard = courseTemplate.content.cloneNode(true)
-
-            courseCard.querySelector(".course-title").textContent = course.title
-            courseCard.querySelector(".course-code").textContent = `Code: ${course.code}`
-            courseCard.querySelector(".course-description").textContent = Utils.truncateText(course.description, 150)
-
-            const lecturerName = course.lecturer.name || "Unknown"
-            courseCard.querySelector(".course-lecturer").textContent = `Lecturer: ${lecturerName}`
-
-            const enrollBtn = courseCard.querySelector(".enroll-btn")
-
-            // Check if already enrolled
-            const isEnrolled = course.students.some((student) => student._id === Auth.user.id)
-
-            if (isEnrolled) {
-              enrollBtn.textContent = "Enrolled"
-              enrollBtn.disabled = true
-              enrollBtn.classList.add("btn-disabled")
-            } else {
-              enrollBtn.addEventListener("click", async (e) => {
-                // Add loader to button
-                const originalText = Utils.addButtonLoader(enrollBtn)
-
-                try {
-                  await API.courses.enroll(course._id)
-                  Utils.showToast(`Enrolled in ${course.title} successfully`)
-                  UI.courses.renderCourses(container)
-                } catch (error) {
-                  Utils.showToast(error.message, "error")
-                  // Remove loader if error
-                  Utils.removeButtonLoader(enrollBtn, originalText)
-                }
-              })
-            }
-
-            coursesGrid.appendChild(courseCard)
-          })
+          coursesGrid.innerHTML =
+            '<p class="empty-state">No courses available</p>';
+          return;
         }
 
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        coursesUI.classList.add("content-loaded")
-        container.appendChild(coursesUI)
+        response.data.forEach((course) => {
+          const courseTemplate = document.getElementById(
+            "course-card-template"
+          );
+          const courseCard = courseTemplate.content.cloneNode(true);
+
+          courseCard.querySelector(".course-title").textContent = course.title;
+          courseCard.querySelector(
+            ".course-code"
+          ).textContent = `Code: ${course.code}`;
+          courseCard.querySelector(".course-description").textContent =
+            Utils.truncateText(course.description, 150);
+
+          const lecturerName = course.lecturer.name || "Unknown";
+          courseCard.querySelector(
+            ".course-lecturer"
+          ).textContent = `Lecturer: ${lecturerName}`;
+
+          const enrollBtn = courseCard.querySelector(".enroll-btn");
+
+          const isEnrolled = course.students.some(
+            (student) => student._id === Auth.user.id
+          );
+
+          if (isEnrolled) {
+            enrollBtn.textContent = "Enrolled";
+            enrollBtn.disabled = true;
+            enrollBtn.classList.add("btn-disabled");
+          } else {
+            enrollBtn.addEventListener("click", async (e) => {
+              const originalText = Utils.addButtonLoader(enrollBtn);
+
+              try {
+                await API.courses.enroll(course._id);
+                Utils.showToast(`Enrolled in ${course.title} successfully`);
+                UI.courses.renderCourses(container);
+              } catch (error) {
+                Utils.showToast(error.message, "error");
+
+                Utils.removeButtonLoader(enrollBtn, originalText);
+              }
+            });
+          }
+
+          coursesGrid.appendChild(courseCard);
+        });
       } catch (error) {
-        console.error("Error loading courses:", error)
-        Utils.showToast("Error loading courses", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load courses</p>'
+        console.error("Error loading courses:", error);
+        Utils.showToast("Error loading courses", "error");
+        coursesGrid.innerHTML =
+          '<p class="empty-state">Failed to load courses</p>';
       }
     },
 
     renderMyCourses: async (container) => {
-      // Clear container and show loader
-      container.innerHTML = ""
-      Utils.showPageLoader(container, "Loading your courses...")
+      const myCoursesUI = UI.renderTemplate("my-courses-template", container);
+      const myCoursesGrid = myCoursesUI.querySelector("#my-courses-grid");
 
-      // Create UI structure but don't append yet
-      const myCoursesUI = document.createElement("div")
-      myCoursesUI.innerHTML = document.getElementById("my-courses-template").content.cloneNode(true).innerHTML
-      const myCoursesGrid = myCoursesUI.querySelector("#my-courses-grid")
+      const addCourseBtn = myCoursesUI.querySelector("#add-course-btn");
+      if (addCourseBtn) {
+        addCourseBtn.addEventListener("click", () => {
+          Utils.showModal("add-course-template", (modal) => {
+            const form = modal.querySelector("#add-course-form");
+
+            form.addEventListener("submit", async (e) => {
+              e.preventDefault();
+
+              const submitBtn = form.querySelector('button[type="submit"]');
+              const formInputs = form.querySelectorAll("input, textarea");
+
+              if (!form.title.value || !form.code.value) {
+                Utils.showToast("Please fill in all required fields", "error");
+                return;
+              }
+
+              submitBtn.disabled = true;
+              formInputs.forEach((input) => (input.disabled = true));
+
+              Utils.addButtonLoader(submitBtn);
+
+              try {
+                const courseData = {
+                  title: form.title.value,
+                  code: form.code.value,
+                  description: form.description.value || "",
+                };
+
+                await API.courses.create(courseData);
+                Utils.showToast("Course created successfully");
+                modal.innerHTML = "";
+
+                Utils.showPageLoader(container, "Refreshing courses...");
+
+                setTimeout(() => {
+                  UI.courses.renderMyCourses(container);
+                }, 500);
+              } catch (error) {
+                Utils.showToast(error.message, "error");
+
+                submitBtn.disabled = false;
+                formInputs.forEach((input) => (input.disabled = false));
+
+                Utils.removeButtonLoader(submitBtn, "Create Course");
+              }
+            });
+          });
+        });
+      }
+
+      Utils.showSkeletonLoading(myCoursesGrid, "skeleton-course-template", 6);
 
       try {
-        const response = await API.courses.getAll()
+        const response = await API.courses.getAll();
 
-        // Clear any existing content
-        myCoursesGrid.innerHTML = ""
+        myCoursesGrid.innerHTML = "";
 
         if (response.data.length === 0) {
-          myCoursesGrid.innerHTML = '<p class="empty-state">You have no courses yet</p>'
+          myCoursesGrid.innerHTML =
+            '<p class="empty-state">You have no courses yet</p>';
         } else {
           response.data.forEach((course) => {
-            const courseTemplate = document.getElementById("course-card-template")
-            const courseCard = courseTemplate.content.cloneNode(true)
+            const courseTemplate = document.getElementById(
+              "course-card-template"
+            );
+            const courseCard = courseTemplate.content.cloneNode(true);
 
-            courseCard.querySelector(".course-title").textContent = course.title
-            courseCard.querySelector(".course-code").textContent = `Code: ${course.code}`
-            courseCard.querySelector(".course-description").textContent = Utils.truncateText(course.description, 150)
+            courseCard.querySelector(".course-title").textContent =
+              course.title;
+            courseCard.querySelector(
+              ".course-code"
+            ).textContent = `Code: ${course.code}`;
+            courseCard.querySelector(".course-description").textContent =
+              Utils.truncateText(course.description, 150);
 
-            // Show student count instead of lecturer
-            const studentCount = course.students ? course.students.length : 0
-            courseCard.querySelector(".course-lecturer").textContent = `Students: ${studentCount}`
+            const studentCount = course.students ? course.students.length : 0;
+            courseCard.querySelector(
+              ".course-lecturer"
+            ).textContent = `Students: ${studentCount}`;
 
-            // Replace enroll button with view button
-            const enrollBtn = courseCard.querySelector(".enroll-btn")
-            enrollBtn.textContent = "View Details"
-            enrollBtn.classList.remove("enroll-btn")
-            enrollBtn.classList.add("view-course-btn")
+            const enrollBtn = courseCard.querySelector(".enroll-btn");
+            enrollBtn.textContent = "View Details";
+            enrollBtn.classList.remove("enroll-btn");
+            enrollBtn.classList.add("view-course-btn");
 
             enrollBtn.addEventListener("click", async () => {
-              // Add loader to button
-              Utils.addButtonLoader(enrollBtn)
+              Utils.addButtonLoader(enrollBtn);
 
-              // Implement course details view
               try {
-                const courseDetails = await API.courses.getOne(course._id)
-                UI.courses.renderCourseDetails(container, courseDetails.data)
+                const courseDetails = await API.courses.getOne(course._id);
+                UI.courses.renderCourseDetails(container, courseDetails.data);
               } catch (error) {
-                Utils.showToast(error.message, "error")
-                // Remove loader if error
-                Utils.removeButtonLoader(enrollBtn, "View Details")
+                Utils.showToast(error.message, "error");
+
+                Utils.removeButtonLoader(enrollBtn, "View Details");
               }
-            })
+            });
 
-            myCoursesGrid.appendChild(courseCard)
-          })
+            myCoursesGrid.appendChild(courseCard);
+          });
         }
-
-        // Set up add course button - ALWAYS add this regardless of whether there are courses or not
-        const addCourseBtn = myCoursesUI.querySelector("#add-course-btn")
-        if (addCourseBtn) {
-          addCourseBtn.addEventListener("click", () => {
-            Utils.showModal("add-course-template", (modal) => {
-              const form = modal.querySelector("#add-course-form")
-
-              form.addEventListener("submit", async (e) => {
-                e.preventDefault()
-
-                // Get form elements
-                const submitBtn = form.querySelector('button[type="submit"]')
-                const formInputs = form.querySelectorAll("input, textarea")
-
-                // Validate form
-                if (!form.title.value || !form.code.value) {
-                  Utils.showToast("Please fill in all required fields", "error")
-                  return
-                }
-
-                // Disable form during submission
-                submitBtn.disabled = true
-                formInputs.forEach((input) => (input.disabled = true))
-
-                // Add loader to button
-                Utils.addButtonLoader(submitBtn)
-
-                try {
-                  const courseData = {
-                    title: form.title.value,
-                    code: form.code.value,
-                    description: form.description.value || "",
-                  }
-
-                  await API.courses.create(courseData)
-                  Utils.showToast("Course created successfully")
-                  modal.innerHTML = ""
-
-                  // Show loader in container
-                  Utils.showPageLoader(container, "Refreshing courses...")
-
-                  // Refresh courses list after a short delay
-                  setTimeout(() => {
-                    UI.courses.renderMyCourses(container)
-                  }, 500)
-                } catch (error) {
-                  console.error("Error creating course:", error)
-                  Utils.showToast(error.message || "Error creating course", "error")
-
-                  // Re-enable form
-                  submitBtn.disabled = false
-                  formInputs.forEach((input) => (input.disabled = false))
-
-                  // Remove loader
-                  Utils.removeButtonLoader(submitBtn, "Create Course")
-                }
-              })
-            })
-          })
-        } else {
-          console.error("Add course button not found in the template")
-        }
-
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        myCoursesUI.classList.add("content-loaded")
-        container.appendChild(myCoursesUI)
       } catch (error) {
-        console.error("Error loading courses:", error)
-        Utils.showToast("Error loading courses", "error")
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>Failed to load courses</p>
-            <button id="retry-load-courses" class="btn btn-primary">Retry</button>
-          </div>
-        `
-
-        // Add retry button functionality
-        const retryBtn = container.querySelector("#retry-load-courses")
-        if (retryBtn) {
-          retryBtn.addEventListener("click", () => {
-            UI.courses.renderMyCourses(container)
-          })
-        }
+        console.error("Error loading courses:", error);
+        Utils.showToast("Error loading courses", "error");
+        myCoursesGrid.innerHTML =
+          '<p class="empty-state">Failed to load courses</p>';
       }
     },
 
-    // New method to render course details
     renderCourseDetails: (container, course) => {
-      // Create a simple course details view
       const detailsHTML = `
         <div class="course-details">
           <div class="back-link">
@@ -566,15 +488,24 @@ const UI = {
           </div>
           <div class="course-info">
             <p><strong>Description:</strong> ${course.description}</p>
-            <p><strong>Created:</strong> ${Utils.formatDate(course.createdAt)}</p>
-            <p><strong>Last Updated:</strong> ${Utils.formatDate(course.updatedAt)}</p>
+            <p><strong>Created:</strong> ${Utils.formatDate(
+              course.createdAt
+            )}</p>
+            <p><strong>Last Updated:</strong> ${Utils.formatDate(
+              course.updatedAt
+            )}</p>
           </div>
           <div class="course-students">
             <h3>Enrolled Students (${course.students.length})</h3>
             <div class="students-list" id="students-list">
               ${
                 course.students.length > 0
-                  ? `<ul>${course.students.map((student) => `<li>${student.name} (${student.email})</li>`).join("")}</ul>`
+                  ? `<ul>${course.students
+                      .map(
+                        (student) =>
+                          `<li>${student.name} (${student.email})</li>`
+                      )
+                      .join("")}</ul>`
                   : '<p class="empty-state">No students enrolled yet</p>'
               }
             </div>
@@ -584,260 +515,261 @@ const UI = {
             <button id="delete-course-btn" class="btn btn-danger">Delete Course</button>
           </div>
         </div>
-      `
+      `;
 
-      container.innerHTML = detailsHTML
+      container.innerHTML = detailsHTML;
 
-      // Set up back button
-      const backBtn = container.querySelector("#back-to-courses")
+      const backBtn = container.querySelector("#back-to-courses");
       backBtn.addEventListener("click", (e) => {
-        e.preventDefault()
-        UI.courses.renderMyCourses(container)
-      })
+        e.preventDefault();
+        UI.courses.renderMyCourses(container);
+      });
 
-      // Set up edit button
-      const editBtn = container.querySelector("#edit-course-btn")
+      const editBtn = container.querySelector("#edit-course-btn");
       editBtn.addEventListener("click", () => {
         Utils.showModal("add-course-template", (modal) => {
-          // Change modal title
-          modal.querySelector(".modal-header h2").textContent = "Edit Course"
+          modal.querySelector(".modal-header h2").textContent = "Edit Course";
 
-          // Get form and pre-fill with course data
-          const form = modal.querySelector("#add-course-form")
-          form.title.value = course.title
-          form.code.value = course.code
-          form.description.value = course.description
+          const form = modal.querySelector("#add-course-form");
+          form.title.value = course.title;
+          form.code.value = course.code;
+          form.description.value = course.description;
 
-          // Change submit button text
-          form.querySelector('button[type="submit"]').textContent = "Update Course"
+          form.querySelector('button[type="submit"]').textContent =
+            "Update Course";
 
           form.addEventListener("submit", async (e) => {
-            e.preventDefault()
+            e.preventDefault();
 
-            // Get form elements
-            const submitBtn = form.querySelector('button[type="submit"]')
-            const formInputs = form.querySelectorAll("input, textarea")
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const formInputs = form.querySelectorAll("input, textarea");
 
-            // Disable form during submission
-            submitBtn.disabled = true
-            formInputs.forEach((input) => (input.disabled = true))
+            submitBtn.disabled = true;
+            formInputs.forEach((input) => (input.disabled = true));
 
-            // Add loader to button
-            Utils.addButtonLoader(submitBtn)
+            Utils.addButtonLoader(submitBtn);
 
             try {
               const courseData = {
                 title: form.title.value,
                 code: form.code.value,
                 description: form.description.value,
-              }
+              };
 
-              await API.courses.update(course._id, courseData)
-              Utils.showToast("Course updated successfully")
-              modal.innerHTML = ""
+              await API.courses.update(course._id, courseData);
+              Utils.showToast("Course updated successfully");
+              modal.innerHTML = "";
 
-              // Show loader in container
-              Utils.showPageLoader(container, "Refreshing course details...")
+              Utils.showPageLoader(container, "Refreshing course details...");
 
-              // Refresh course details
-              const updatedCourse = await API.courses.getOne(course._id)
-              UI.courses.renderCourseDetails(container, updatedCourse.data)
+              const updatedCourse = await API.courses.getOne(course._id);
+              UI.courses.renderCourseDetails(container, updatedCourse.data);
             } catch (error) {
-              Utils.showToast(error.message, "error")
+              Utils.showToast(error.message, "error");
 
-              // Re-enable form
-              submitBtn.disabled = false
-              formInputs.forEach((input) => (input.disabled = false))
+              submitBtn.disabled = false;
+              formInputs.forEach((input) => (input.disabled = false));
 
-              // Remove loader
-              Utils.removeButtonLoader(submitBtn, "Update Course")
+              Utils.removeButtonLoader(submitBtn, "Update Course");
             }
-          })
-        })
-      })
+          });
+        });
+      });
 
-      // Set up delete button
-      const deleteBtn = container.querySelector("#delete-course-btn")
+      const deleteBtn = container.querySelector("#delete-course-btn");
       deleteBtn.addEventListener("click", async () => {
-        if (confirm(`Are you sure you want to delete "${course.title}"? This action cannot be undone.`)) {
-          // Add loader to button
-          Utils.addButtonLoader(deleteBtn)
+        if (
+          confirm(
+            `Are you sure you want to delete "${course.title}"? This action cannot be undone.`
+          )
+        ) {
+          Utils.addButtonLoader(deleteBtn);
 
           try {
-            await API.courses.delete(course._id)
-            Utils.showToast("Course deleted successfully")
+            await API.courses.delete(course._id);
+            Utils.showToast("Course deleted successfully");
 
-            // Show loader in container
-            Utils.showPageLoader(container, "Redirecting...")
+            Utils.showPageLoader(container, "Redirecting...");
 
-            // Redirect after a short delay
             setTimeout(() => {
-              UI.courses.renderMyCourses(container)
-            }, 500)
+              UI.courses.renderMyCourses(container);
+            }, 500);
           } catch (error) {
-            Utils.showToast(error.message, "error")
-            // Remove loader if error
-            Utils.removeButtonLoader(deleteBtn, "Delete Course")
+            Utils.showToast(error.message, "error");
+
+            Utils.removeButtonLoader(deleteBtn, "Delete Course");
           }
         }
-      })
+      });
     },
   },
 
-  // Assignments UI
   assignments: {
-    // Update the assignments.renderAssignments method to properly handle loading states
     renderAssignments: async (container) => {
-      // Clear container and show loader
-      container.innerHTML = ""
-      Utils.showPageLoader(container, "Loading assignments...")
+      const assignmentsUI = UI.renderTemplate(
+        "assignments-template",
+        container
+      );
+      const assignmentsList = assignmentsUI.querySelector("#assignments-list");
 
-      // Create UI structure but don't append yet
-      const assignmentsUI = document.createElement("div")
-      assignmentsUI.innerHTML = document.getElementById("assignments-template").content.cloneNode(true).innerHTML
-      const assignmentsList = assignmentsUI.querySelector("#assignments-list")
+      Utils.showSkeletonLoading(
+        assignmentsList,
+        "skeleton-assignment-template",
+        6
+      );
 
       try {
-        const response = await API.assignments.getAll()
+        const response = await API.assignments.getAll();
+
+        assignmentsList.innerHTML = "";
 
         if (response.data.length === 0) {
-          assignmentsList.innerHTML = '<p class="empty-state">No assignments available</p>'
-        } else {
-          assignmentsList.innerHTML = ""
-
-          response.data.forEach((assignment) => {
-            const assignmentTemplate = document.getElementById("assignment-card-template")
-            const assignmentCard = assignmentTemplate.content.cloneNode(true)
-
-            assignmentCard.querySelector(".assignment-title").textContent = assignment.title
-            assignmentCard.querySelector(".assignment-course").textContent = assignment.course.title
-            assignmentCard.querySelector(".assignment-description").textContent = Utils.truncateText(
-              assignment.description,
-              150,
-            )
-            assignmentCard.querySelector(".assignment-due-date span").textContent = Utils.formatDate(assignment.dueDate)
-            assignmentCard.querySelector(".assignment-max-marks span").textContent = assignment.maxMarks
-
-            const viewBtn = assignmentCard.querySelector(".view-assignment-btn")
-            viewBtn.addEventListener("click", () => {
-              // Add loader to button
-              Utils.addButtonLoader(viewBtn)
-
-              // Show assignment details
-              UI.assignments.renderAssignmentDetail(container, assignment._id)
-            })
-
-            assignmentsList.appendChild(assignmentCard)
-          })
+          assignmentsList.innerHTML =
+            '<p class="empty-state">No assignments available</p>';
+          return;
         }
 
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        assignmentsUI.classList.add("content-loaded")
-        container.appendChild(assignmentsUI)
+        response.data.forEach((assignment) => {
+          const assignmentTemplate = document.getElementById(
+            "assignment-card-template"
+          );
+          const assignmentCard = assignmentTemplate.content.cloneNode(true);
+
+          assignmentCard.querySelector(".assignment-title").textContent =
+            assignment.title;
+          assignmentCard.querySelector(".assignment-course").textContent =
+            assignment.course.title;
+          assignmentCard.querySelector(".assignment-description").textContent =
+            Utils.truncateText(assignment.description, 150);
+          assignmentCard.querySelector(
+            ".assignment-due-date span"
+          ).textContent = Utils.formatDate(assignment.dueDate);
+          assignmentCard.querySelector(
+            ".assignment-max-marks span"
+          ).textContent = assignment.maxMarks;
+
+          const viewBtn = assignmentCard.querySelector(".view-assignment-btn");
+          viewBtn.addEventListener("click", () => {
+            Utils.addButtonLoader(viewBtn);
+
+            UI.assignments.renderAssignmentDetail(container, assignment._id);
+          });
+
+          assignmentsList.appendChild(assignmentCard);
+        });
       } catch (error) {
-        console.error("Error loading assignments:", error)
-        Utils.showToast("Error loading assignments", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load assignments</p>'
+        console.error("Error loading assignments:", error);
+        Utils.showToast("Error loading assignments", "error");
+        assignmentsList.innerHTML =
+          '<p class="empty-state">Failed to load assignments</p>';
       }
     },
 
     renderMyAssignments: async (container) => {
-      const myAssignmentsUI = UI.renderTemplate("my-assignments-template", container)
-      const myAssignmentsList = myAssignmentsUI.querySelector("#my-assignments-list")
+      const myAssignmentsUI = UI.renderTemplate(
+        "my-assignments-template",
+        container
+      );
+      const myAssignmentsList = myAssignmentsUI.querySelector(
+        "#my-assignments-list"
+      );
 
-      // Show skeleton loading
-      Utils.showSkeletonLoading(myAssignmentsList, "skeleton-assignment-template", 6)
+      Utils.showSkeletonLoading(
+        myAssignmentsList,
+        "skeleton-assignment-template",
+        6
+      );
 
       try {
-        const response = await API.assignments.getAll()
+        const response = await API.assignments.getAll();
 
-        // Clear skeleton loading
-        myAssignmentsList.innerHTML = ""
+        myAssignmentsList.innerHTML = "";
 
         if (response.data.length === 0) {
-          myAssignmentsList.innerHTML = '<p class="empty-state">You have no assignments yet</p>'
+          myAssignmentsList.innerHTML =
+            '<p class="empty-state">You have no assignments yet</p>';
         } else {
           response.data.forEach((assignment) => {
-            const assignmentTemplate = document.getElementById("assignment-card-template")
-            const assignmentCard = assignmentTemplate.content.cloneNode(true)
+            const assignmentTemplate = document.getElementById(
+              "assignment-card-template"
+            );
+            const assignmentCard = assignmentTemplate.content.cloneNode(true);
 
-            assignmentCard.querySelector(".assignment-title").textContent = assignment.title
-            assignmentCard.querySelector(".assignment-course").textContent = assignment.course.title
-            assignmentCard.querySelector(".assignment-description").textContent = Utils.truncateText(
-              assignment.description,
-              150,
-            )
-            assignmentCard.querySelector(".assignment-due-date span").textContent = Utils.formatDate(assignment.dueDate)
-            assignmentCard.querySelector(".assignment-max-marks span").textContent = assignment.maxMarks
+            assignmentCard.querySelector(".assignment-title").textContent =
+              assignment.title;
+            assignmentCard.querySelector(".assignment-course").textContent =
+              assignment.course.title;
+            assignmentCard.querySelector(
+              ".assignment-description"
+            ).textContent = Utils.truncateText(assignment.description, 150);
+            assignmentCard.querySelector(
+              ".assignment-due-date span"
+            ).textContent = Utils.formatDate(assignment.dueDate);
+            assignmentCard.querySelector(
+              ".assignment-max-marks span"
+            ).textContent = assignment.maxMarks;
 
-            const viewBtn = assignmentCard.querySelector(".view-assignment-btn")
-            viewBtn.textContent = "View Submissions"
+            const viewBtn = assignmentCard.querySelector(
+              ".view-assignment-btn"
+            );
+            viewBtn.textContent = "View Submissions";
             viewBtn.addEventListener("click", () => {
-              // Add loader to button
-              Utils.addButtonLoader(viewBtn)
+              Utils.addButtonLoader(viewBtn);
 
-              // Show submissions for this assignment
-              UI.submissions.renderSubmissionsByAssignment(container, assignment._id)
-            })
+              UI.submissions.renderSubmissionsByAssignment(
+                container,
+                assignment._id
+              );
+            });
 
-            myAssignmentsList.appendChild(assignmentCard)
-          })
+            myAssignmentsList.appendChild(assignmentCard);
+          });
         }
 
-        // Set up add assignment button - FIXED VERSION
-        const addAssignmentBtn = myAssignmentsUI.querySelector("#add-assignment-btn")
+        const addAssignmentBtn = myAssignmentsUI.querySelector(
+          "#add-assignment-btn"
+        );
 
         addAssignmentBtn.addEventListener("click", () => {
-          // Add loader to button
-          const originalText = Utils.addButtonLoader(addAssignmentBtn)
+          const originalText = Utils.addButtonLoader(addAssignmentBtn);
 
-          // Load courses and show modal
           loadCoursesAndShowModal().catch(() => {
-            // Remove loader if error
-            Utils.removeButtonLoader(addAssignmentBtn, originalText)
-          })
-        })
+            Utils.removeButtonLoader(addAssignmentBtn, originalText);
+          });
+        });
 
-        // Function to load courses and show modal
         async function loadCoursesAndShowModal() {
           try {
-            // Get courses for dropdown
-            const coursesResponse = await API.courses.getAll()
+            const coursesResponse = await API.courses.getAll();
 
-            // Remove loader from button
-            Utils.removeButtonLoader(addAssignmentBtn, "Add Assignment")
+            Utils.removeButtonLoader(addAssignmentBtn, "Add Assignment");
 
             if (!coursesResponse.data || coursesResponse.data.length === 0) {
-              Utils.showToast("You need to create a course first", "warning")
-              return
+              Utils.showToast("You need to create a course first", "warning");
+              return;
             }
 
-            // Show modal with loaded courses
             Utils.showModal("add-assignment-template", (modal) => {
-              const form = modal.querySelector("#add-assignment-form")
-              const courseSelect = form.querySelector("#assignment-course")
+              const form = modal.querySelector("#add-assignment-form");
+              const courseSelect = form.querySelector("#assignment-course");
 
-              // Clear any existing options
-              courseSelect.innerHTML = ""
+              courseSelect.innerHTML = "";
 
-              // Populate course dropdown
               coursesResponse.data.forEach((course) => {
-                const option = document.createElement("option")
-                option.value = course._id
-                option.textContent = `${course.title} (${course.code})`
-                courseSelect.appendChild(option)
-              })
+                const option = document.createElement("option");
+                option.value = course._id;
+                option.textContent = `${course.title} (${course.code})`;
+                courseSelect.appendChild(option);
+              });
 
-              // Set up form submission
               form.addEventListener("submit", async (e) => {
-                e.preventDefault()
+                e.preventDefault();
 
-                // Get form elements
-                const submitBtn = form.querySelector('button[type="submit"]')
-                const formInputs = form.querySelectorAll("input, textarea, select")
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const formInputs = form.querySelectorAll(
+                  "input, textarea, select"
+                );
 
-                // Validate form
                 if (
                   !form.title.value ||
                   !form.description.value ||
@@ -845,764 +777,1053 @@ const UI = {
                   !form.dueDate.value ||
                   !form.maxMarks.value
                 ) {
-                  Utils.showToast("Please fill in all fields", "error")
-                  return
+                  Utils.showToast("Please fill in all fields", "error");
+                  return;
                 }
 
-                // Disable form during submission
-                submitBtn.disabled = true
-                formInputs.forEach((input) => (input.disabled = true))
+                submitBtn.disabled = true;
+                formInputs.forEach((input) => (input.disabled = true));
 
-                // Add loader to button
-                Utils.addButtonLoader(submitBtn)
+                Utils.addButtonLoader(submitBtn);
 
                 try {
-                  // Create assignment data object
                   const assignmentData = {
                     title: form.title.value,
                     description: form.description.value,
                     course: form.course.value,
                     dueDate: form.dueDate.value,
                     maxMarks: Number.parseInt(form.maxMarks.value),
-                  }
+                  };
 
-                  // Log the data being sent (for debugging)
-                  console.log("Creating assignment with data:", assignmentData)
+                  console.log("Creating assignment with data:", assignmentData);
 
-                  // Create assignment
-                  await API.assignments.create(assignmentData)
+                  await API.assignments.create(assignmentData);
 
-                  // Show success message
-                  Utils.showToast("Assignment created successfully")
+                  Utils.showToast("Assignment created successfully");
 
-                  // Close modal
-                  modal.innerHTML = ""
+                  modal.innerHTML = "";
 
-                  // Show loader in container
-                  Utils.showPageLoader(container, "Refreshing assignments...")
+                  Utils.showPageLoader(container, "Refreshing assignments...");
 
-                  // Refresh assignments list after a short delay
                   setTimeout(() => {
-                    UI.assignments.renderMyAssignments(container)
-                  }, 500)
+                    UI.assignments.renderMyAssignments(container);
+                  }, 500);
                 } catch (error) {
-                  console.error("Error creating assignment:", error)
-                  Utils.showToast(error.message || "Error creating assignment", "error")
+                  console.error("Error creating assignment:", error);
+                  Utils.showToast(
+                    error.message || "Error creating assignment",
+                    "error"
+                  );
 
-                  // Re-enable form
-                  submitBtn.disabled = false
-                  formInputs.forEach((input) => (input.disabled = false))
+                  submitBtn.disabled = false;
+                  formInputs.forEach((input) => (input.disabled = false));
 
-                  // Remove loader
-                  Utils.removeButtonLoader(submitBtn, "Create Assignment")
+                  Utils.removeButtonLoader(submitBtn, "Create Assignment");
                 }
-              })
-            })
+              });
+            });
           } catch (error) {
-            console.error("Error loading courses:", error)
-            Utils.showToast("Error loading courses", "error")
-            throw error // Rethrow to handle in the caller
+            console.error("Error loading courses:", error);
+            Utils.showToast("Error loading courses", "error");
+            throw error;
           }
         }
       } catch (error) {
-        console.error("Error loading assignments:", error)
-        Utils.showToast("Error loading assignments", "error")
-        myAssignmentsList.innerHTML = '<p class="empty-state">Failed to load assignments</p>'
+        console.error("Error loading assignments:", error);
+        Utils.showToast("Error loading assignments", "error");
+        myAssignmentsList.innerHTML =
+          '<p class="empty-state">Failed to load assignments</p>';
       }
     },
 
     renderAssignmentDetail: async (container, assignmentId) => {
-      // Show page loader
-      Utils.showPageLoader(container, "Loading assignment details...")
+      Utils.showPageLoader(container, "Loading assignment details...");
 
       try {
-        const assignment = await API.assignments.getOne(assignmentId)
+        const assignment = await API.assignments.getOne(assignmentId);
 
-        const assignmentDetailUI = UI.renderTemplate("assignment-detail-template", container)
+        const assignmentDetailUI = UI.renderTemplate(
+          "assignment-detail-template",
+          container
+        );
 
-        // Fill assignment details
-        assignmentDetailUI.querySelector("#detail-assignment-title").textContent = assignment.data.title
-        assignmentDetailUI.querySelector("#detail-assignment-course").textContent = assignment.data.course.title
-        assignmentDetailUI.querySelector("#detail-assignment-description").textContent = assignment.data.description
-        assignmentDetailUI.querySelector("#detail-assignment-due-date").textContent = Utils.formatDate(
-          assignment.data.dueDate,
-        )
-        assignmentDetailUI.querySelector("#detail-assignment-max-marks").textContent = assignment.data.maxMarks
+        assignmentDetailUI.querySelector(
+          "#detail-assignment-title"
+        ).textContent = assignment.data.title;
+        assignmentDetailUI.querySelector(
+          "#detail-assignment-course"
+        ).textContent = assignment.data.course.title;
+        assignmentDetailUI.querySelector(
+          "#detail-assignment-description"
+        ).textContent = assignment.data.description;
+        assignmentDetailUI.querySelector(
+          "#detail-assignment-due-date"
+        ).textContent = Utils.formatDate(assignment.data.dueDate);
+        assignmentDetailUI.querySelector(
+          "#detail-assignment-max-marks"
+        ).textContent = assignment.data.maxMarks;
 
-        // Set up back button
-        const backBtn = assignmentDetailUI.querySelector("#back-to-assignments")
+        const backBtn = assignmentDetailUI.querySelector(
+          "#back-to-assignments"
+        );
         backBtn.addEventListener("click", (e) => {
-          e.preventDefault()
-          UI.assignments.renderAssignments(container)
-        })
+          e.preventDefault();
+          UI.assignments.renderAssignments(container);
+        });
 
-        // Set up submission form for students
         if (Auth.user.role === "student") {
-          const submitForm = assignmentDetailUI.querySelector("#submit-assignment-form")
+          const submitForm = assignmentDetailUI.querySelector(
+            "#submit-assignment-form"
+          );
 
           submitForm.addEventListener("submit", async (e) => {
-            e.preventDefault()
+            e.preventDefault();
 
-            // Get form elements
-            const submitBtn = submitForm.querySelector('button[type="submit"]')
-            const textArea = submitForm.textAnswer
-            const fileInput = submitForm.file
+            const submitBtn = submitForm.querySelector('button[type="submit"]');
+            const textArea = submitForm.textAnswer;
+            const fileInput = submitForm.file;
 
-            // Validate form
             if (!textArea.value && !fileInput.files[0]) {
-              Utils.showToast("Please provide either text answer or a file", "error")
-              return
+              Utils.showToast(
+                "Please provide either text answer or a file",
+                "error"
+              );
+              return;
             }
 
-            // Disable form during submission
-            submitBtn.disabled = true
-            textArea.disabled = true
-            fileInput.disabled = true
+            submitBtn.disabled = true;
+            textArea.disabled = true;
+            fileInput.disabled = true;
 
-            // Add loader to button
-            Utils.addButtonLoader(submitBtn)
+            Utils.addButtonLoader(submitBtn);
 
             try {
-              const textAnswer = textArea.value
-              const file = fileInput.files[0]
+              const textAnswer = textArea.value;
+              const file = fileInput.files[0];
 
               await API.submissions.create(
                 {
                   assignmentId: assignmentId,
                   textAnswer: textAnswer,
                 },
-                file,
-              )
+                file
+              );
 
-              Utils.showToast("Assignment submitted successfully")
+              Utils.showToast("Assignment submitted successfully");
 
-              // Show loader in container
-              Utils.showPageLoader(container, "Redirecting...")
+              Utils.showPageLoader(container, "Redirecting...");
 
-              // Redirect after a short delay
               setTimeout(() => {
-                UI.assignments.renderAssignments(container)
-              }, 500)
+                UI.assignments.renderAssignments(container);
+              }, 500);
             } catch (error) {
-              Utils.showToast(error.message, "error")
+              Utils.showToast(error.message, "error");
 
-              // Re-enable form
-              submitBtn.disabled = false
-              textArea.disabled = false
-              fileInput.disabled = false
+              submitBtn.disabled = false;
+              textArea.disabled = false;
+              fileInput.disabled = false;
 
-              // Remove loader
-              Utils.removeButtonLoader(submitBtn, "Submit Assignment")
+              Utils.removeButtonLoader(submitBtn, "Submit Assignment");
             }
-          })
+          });
         }
       } catch (error) {
-        console.error("Error loading assignment details:", error)
-        Utils.showToast("Error loading assignment details", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load assignment details</p>'
+        console.error("Error loading assignment details:", error);
+        Utils.showToast("Error loading assignment details", "error");
+        container.innerHTML =
+          '<p class="empty-state">Failed to load assignment details</p>';
       }
     },
   },
 
-  // Submissions UI
   submissions: {
-    // Update the submissions.renderSubmissions method to properly handle loading states
     renderSubmissions: async (container) => {
-      // Clear container and show loader
-      container.innerHTML = ""
-      Utils.showPageLoader(container, "Loading submissions...")
+      const submissionsUI = UI.renderTemplate(
+        "submissions-template",
+        container
+      );
+      const submissionsList = submissionsUI.querySelector("#submissions-list");
 
-      // Create UI structure but don't append yet
-      const submissionsUI = document.createElement("div")
-      submissionsUI.innerHTML = document.getElementById("submissions-template").content.cloneNode(true).innerHTML
-      const submissionsList = submissionsUI.querySelector("#submissions-list")
+      Utils.showSkeletonLoading(
+        submissionsList,
+        "skeleton-assignment-template",
+        6
+      );
 
       try {
-        const response = await API.submissions.getAll()
+        const response = await API.submissions.getAll();
+
+        submissionsList.innerHTML = "";
 
         if (response.data.length === 0) {
-          submissionsList.innerHTML = '<p class="empty-state">You have no submissions yet</p>'
-        } else {
-          submissionsList.innerHTML = ""
-
-          response.data.forEach((submission) => {
-            const submissionTemplate = document.getElementById("submission-card-template")
-            const submissionCard = submissionTemplate.content.cloneNode(true)
-
-            submissionCard.querySelector(".submission-assignment").textContent = submission.assignment.title
-            submissionCard.querySelector(".submission-course").textContent = submission.assignment.course.title
-            submissionCard.querySelector(".submission-date span").textContent = Utils.formatDate(submission.submittedAt)
-
-            const statusSpan = submissionCard.querySelector(".submission-status span")
-            const marksSpan = submissionCard.querySelector(".submission-marks span:first-child")
-            const feedbackSpan = submissionCard.querySelector(".submission-marks span:last-child")
-
-            if (submission.marks !== null) {
-              statusSpan.textContent = "Graded"
-              statusSpan.classList.add("status-graded")
-              marksSpan.textContent = `${submission.marks}/${submission.assignment.maxMarks}`
-              feedbackSpan.textContent = submission.feedback || "No feedback provided"
-            } else {
-              statusSpan.textContent = "Pending"
-              statusSpan.classList.add("status-pending")
-              marksSpan.textContent = "Not graded yet"
-              feedbackSpan.textContent = "No feedback yet"
-            }
-
-            const viewBtn = submissionCard.querySelector(".view-submission-btn")
-            viewBtn.addEventListener("click", () => {
-              // Add loader to button
-              Utils.addButtonLoader(viewBtn)
-
-              // Show submission details
-              UI.submissions.renderSubmissionDetail(container, submission._id)
-            })
-
-            submissionsList.appendChild(submissionCard)
-          })
+          submissionsList.innerHTML =
+            '<p class="empty-state">You have no submissions yet</p>';
+          return;
         }
 
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        submissionsUI.classList.add("content-loaded")
-        container.appendChild(submissionsUI)
+        response.data.forEach((submission) => {
+          const submissionTemplate = document.getElementById(
+            "submission-card-template"
+          );
+          const submissionCard = submissionTemplate.content.cloneNode(true);
+
+          submissionCard.querySelector(".submission-assignment").textContent =
+            submission.assignment.title;
+          submissionCard.querySelector(".submission-course").textContent =
+            submission.assignment.course.title;
+          submissionCard.querySelector(".submission-date span").textContent =
+            Utils.formatDate(submission.submittedAt);
+
+          const statusSpan = submissionCard.querySelector(
+            ".submission-status span"
+          );
+          const marksSpan = submissionCard.querySelector(
+            ".submission-marks span:first-child"
+          );
+          const feedbackSpan = submissionCard.querySelector(
+            ".submission-marks span:last-child"
+          );
+
+          if (submission.marks !== null) {
+            statusSpan.textContent = "Graded";
+            statusSpan.classList.add("status-graded");
+            marksSpan.textContent = `${submission.marks}/${submission.assignment.maxMarks}`;
+            feedbackSpan.textContent =
+              submission.feedback || "No feedback provided";
+          } else {
+            statusSpan.textContent = "Pending";
+            statusSpan.classList.add("status-pending");
+            marksSpan.textContent = "Not graded yet";
+            feedbackSpan.textContent = "No feedback yet";
+          }
+
+          const viewBtn = submissionCard.querySelector(".view-submission-btn");
+          viewBtn.addEventListener("click", () => {
+            Utils.addButtonLoader(viewBtn);
+
+            UI.submissions.renderSubmissionDetail(container, submission._id);
+          });
+
+          submissionsList.appendChild(submissionCard);
+        });
       } catch (error) {
-        console.error("Error loading submissions:", error)
-        Utils.showToast("Error loading submissions", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load submissions</p>'
+        console.error("Error loading submissions:", error);
+        Utils.showToast("Error loading submissions", "error");
+        submissionsList.innerHTML =
+          '<p class="empty-state">Failed to load submissions</p>';
       }
     },
 
-    renderStudentSubmissions: async (container) => {
-      const studentSubmissionsUI = UI.renderTemplate("student-submissions-template", container)
-      const submissionsList = studentSubmissionsUI.querySelector("#student-submissions-list")
-      const filterCourse = studentSubmissionsUI.querySelector("#filter-course")
-      const filterAssignment = studentSubmissionsUI.querySelector("#filter-assignment")
+    // renderStudentSubmissions: async (container) => {
+    //   const studentSubmissionsUI = UI.renderTemplate(
+    //     "student-submissions-template",
+    //     container
+    //   );
+    //   const submissionsList = studentSubmissionsUI.querySelector(
+    //     "#student-submissions-list"
+    //   );
+    //   const filterCourse = studentSubmissionsUI.querySelector("#filter-course");
+    //   const filterAssignment =
+    //     studentSubmissionsUI.querySelector("#filter-assignment");
 
-      // Show loader
-      const loader = Utils.showLoader(container)
+    //   const loader = Utils.showLoader(container);
+
+    //   try {
+    //     const coursesResponse = await API.courses.getAll();
+
+    //     filterCourse.innerHTML = '<option value="">All Courses</option>';
+    //     coursesResponse.data.forEach((course) => {
+    //       const option = document.createElement("option");
+    //       option.value = course._id;
+    //       option.textContent = course.title;
+    //       filterCourse.appendChild(option);
+    //     });
+
+    //     filterCourse.addEventListener("change", async () => {
+    //       const courseId = filterCourse.value;
+
+    //       filterAssignment.innerHTML =
+    //         '<option value="">All Assignments</option>';
+
+    //       if (courseId) {
+    //         const filterLoader = Utils.showLoader(submissionsList);
+
+    //         try {
+    //           const assignmentsResponse = await API.assignments.getByCourse(
+    //             courseId
+    //           );
+
+    //           assignmentsResponse.data.forEach((assignment) => {
+    //             const option = document.createElement("option");
+    //             option.value = assignment._id;
+    //             option.textContent = assignment.title;
+    //             filterAssignment.appendChild(option);
+    //           });
+    //         } catch (error) {
+    //           console.error("Error loading assignments:", error);
+    //           Utils.showToast("Error loading assignments", "error");
+    //         } finally {
+    //           Utils.removeLoader(submissionsList);
+    //         }
+    //       }
+
+    //       loadSubmissions();
+    //     });
+
+    //     filterAssignment.addEventListener("change", () => {
+    //       loadSubmissions();
+    //     });
+
+    //     const loadSubmissions = async () => {
+    //       const courseId = filterCourse.value;
+    //       const assignmentId = filterAssignment.value;
+
+    //       const filterLoader = Utils.showLoader(submissionsList);
+
+    //       try {
+    //         let submissions = [];
+
+    //         if (assignmentId) {
+    //           const response = await API.submissions.getByAssignment(
+    //             assignmentId
+    //           );
+    //           submissions = response.data;
+    //         } else {
+    //           const response = await API.submissions.getAll();
+    //           submissions = response.data;
+
+    //           if (courseId) {
+    //             submissions = submissions.filter(
+    //               (submission) => submission.assignment.course._id === courseId
+    //             );
+    //           }
+    //         }
+
+    //         renderSubmissionsList(submissions);
+    //       } catch (error) {
+    //         console.error("Error loading submissions:", error);
+    //         Utils.showToast("Error loading submissions", "error");
+    //         submissionsList.innerHTML =
+    //           '<p class="empty-state">Failed to load submissions</p>';
+    //       } finally {
+    //         Utils.removeLoader(submissionsList);
+    //       }
+    //     };
+
+    //     const renderSubmissionsList = (submissions) => {
+    //       if (submissions.length === 0) {
+    //         submissionsList.innerHTML =
+    //           '<p class="empty-state">No submissions found</p>';
+    //         return;
+    //       }
+
+    //       submissionsList.innerHTML = "";
+
+    //       submissions.forEach((submission) => {
+    //         const submissionTemplate = document.getElementById(
+    //           "submission-card-template"
+    //         );
+    //         const submissionCard = submissionTemplate.content.cloneNode(true);
+
+    //         submissionCard.querySelector(".submission-assignment").textContent =
+    //           submission.assignment.title;
+
+    //         const courseSpan =
+    //           submissionCard.querySelector(".submission-course");
+    //         courseSpan.textContent = `${submission.student.name} - ${submission.assignment.course.title}`;
+
+    //         submissionCard.querySelector(".submission-date span").textContent =
+    //           Utils.formatDate(submission.submittedAt);
+
+    //         const statusSpan = submissionCard.querySelector(
+    //           ".submission-status span"
+    //         );
+    //         const marksSpan = submissionCard.querySelector(
+    //           ".submission-marks span:first-child"
+    //         );
+    //         const feedbackSpan = submissionCard.querySelector(
+    //           ".submission-marks span:last-child"
+    //         );
+
+    //         if (submission.marks !== null) {
+    //           statusSpan.textContent = "Graded";
+    //           statusSpan.classList.add("status-graded");
+    //           marksSpan.textContent = `${submission.marks}/${submission.assignment.maxMarks}`;
+    //           feedbackSpan.textContent =
+    //             submission.feedback || "No feedback provided";
+    //         } else {
+    //           statusSpan.textContent = "Pending";
+    //           statusSpan.classList.add("status-pending");
+    //           marksSpan.textContent = "Not graded yet";
+    //           feedbackSpan.textContent = "No feedback yet";
+    //         }
+
+    //         const viewBtn = submissionCard.querySelector(
+    //           ".view-submission-btn"
+    //         );
+    //         viewBtn.textContent = "Grade Submission";
+    //         viewBtn.addEventListener("click", () => {
+    //           Utils.addButtonLoader(viewBtn);
+
+    //           UI.submissions.renderGradeSubmission(container, submission._id);
+    //         });
+
+    //         submissionsList.appendChild(submissionCard);
+    //       });
+    //     };
+
+    //     Utils.removeLoader(container);
+
+    //     loadSubmissions();
+    //   } catch (error) {
+    //     console.error("Error loading submissions:", error);
+    //     Utils.showToast("Error loading submissions", "error");
+    //     submissionsList.innerHTML =
+    //       '<p class="empty-state">Failed to load submissions</p>';
+
+    //     Utils.removeLoader(container);
+    //   }
+    // },
+
+    renderStudentSubmissions: async (container) => {
+      const studentSubmissionsUI = UI.renderTemplate(
+        "student-submissions-template",
+        container
+      );
+      const submissionsList = studentSubmissionsUI.querySelector(
+        "#student-submissions-list"
+      );
+      const filterCourse = studentSubmissionsUI.querySelector("#filter-course");
+      const filterAssignment =
+        studentSubmissionsUI.querySelector("#filter-assignment");
+
+      
+      const loader = Utils.showLoader(container);
 
       try {
-        // Load courses for filter
-        const coursesResponse = await API.courses.getAll()
+        
+        const coursesResponse = await API.courses.getAll();
 
-        // Populate course filter
-        filterCourse.innerHTML = '<option value="">All Courses</option>'
+        
+        filterCourse.innerHTML = '<option value="">All Courses</option>';
         coursesResponse.data.forEach((course) => {
-          const option = document.createElement("option")
-          option.value = course._id
-          option.textContent = course.title
-          filterCourse.appendChild(option)
-        })
+          const option = document.createElement("option");
+          option.value = course._id;
+          option.textContent = course.title;
+          filterCourse.appendChild(option);
+        });
 
-        // Set up course filter change event
+        
         filterCourse.addEventListener("change", async () => {
-          const courseId = filterCourse.value
+          const courseId = filterCourse.value;
 
-          // Reset assignment filter
-          filterAssignment.innerHTML = '<option value="">All Assignments</option>'
+          
+          filterAssignment.innerHTML =
+            '<option value="">All Assignments</option>';
 
           if (courseId) {
-            // Show loader
-            const filterLoader = Utils.showLoader(submissionsList)
+            
+            const filterLoader = Utils.showLoader(submissionsList);
 
             try {
-              // Load assignments for selected course
-              const assignmentsResponse = await API.assignments.getByCourse(courseId)
+              
+              const assignmentsResponse = await API.assignments.getByCourse(
+                courseId
+              );
 
-              assignmentsResponse.data.forEach((assignment) => {
-                const option = document.createElement("option")
-                option.value = assignment._id
-                option.textContent = assignment.title
-                filterAssignment.appendChild(option)
-              })
+              if (
+                assignmentsResponse &&
+                assignmentsResponse.data &&
+                Array.isArray(assignmentsResponse.data)
+              ) {
+                assignmentsResponse.data.forEach((assignment) => {
+                  const option = document.createElement("option");
+                  option.value = assignment._id;
+                  option.textContent = assignment.title;
+                  filterAssignment.appendChild(option);
+                });
+              } else {
+                console.error(
+                  "Invalid assignments response:",
+                  assignmentsResponse
+                );
+                Utils.showToast("Error loading assignments", "error");
+              }
             } catch (error) {
-              console.error("Error loading assignments:", error)
-              Utils.showToast("Error loading assignments", "error")
+              console.error("Error loading assignments:", error);
+              Utils.showToast("Error loading assignments", "error");
             } finally {
-              // Remove loader
-              Utils.removeLoader(submissionsList)
+              
+              Utils.removeLoader(submissionsList);
             }
           }
 
-          // Reload submissions with filter
-          loadSubmissions()
-        })
+          
+          loadSubmissions();
+        });
 
-        // Set up assignment filter change event
+        
         filterAssignment.addEventListener("change", () => {
-          loadSubmissions()
-        })
+          loadSubmissions();
+        });
 
-        // Function to load submissions with filters
+        
         const loadSubmissions = async () => {
-          const courseId = filterCourse.value
-          const assignmentId = filterAssignment.value
+          const courseId = filterCourse.value;
+          const assignmentId = filterAssignment.value;
 
-          // Show loader
-          const filterLoader = Utils.showLoader(submissionsList)
+          
+          submissionsList.innerHTML = "";
+          const filterLoader = Utils.showLoader(submissionsList);
 
           try {
-            let submissions = []
+            let submissions = [];
 
             if (assignmentId) {
-              // Filter by assignment
-              const response = await API.submissions.getByAssignment(assignmentId)
-              submissions = response.data
+              
+              console.log("Filtering by assignment ID:", assignmentId);
+              try {
+                const response = await API.submissions.getByAssignment(
+                  assignmentId
+                );
+                if (response && response.data) {
+                  submissions = response.data;
+                  console.log("Submissions by assignment:", submissions);
+                } else {
+                  console.error("Invalid response format:", response);
+                  Utils.showToast(
+                    "Error: Invalid response from server",
+                    "error"
+                  );
+                }
+              } catch (assignmentError) {
+                console.error(
+                  "Error fetching submissions by assignment:",
+                  assignmentError
+                );
+                Utils.showToast(
+                  "Error fetching submissions by assignment",
+                  "error"
+                );
+                
+                const allResponse = await API.submissions.getAll();
+                submissions = allResponse.data.filter(
+                  (submission) => submission.assignment._id === assignmentId
+                );
+              }
             } else {
-              // Get all submissions
-              const response = await API.submissions.getAll()
-              submissions = response.data
+              
+              const response = await API.submissions.getAll();
+              submissions = response.data;
 
-              // Filter by course if selected
+              
               if (courseId) {
-                submissions = submissions.filter((submission) => submission.assignment.course._id === courseId)
+                submissions = submissions.filter(
+                  (submission) => submission.assignment.course._id === courseId
+                );
               }
             }
 
-            renderSubmissionsList(submissions)
+            renderSubmissionsList(submissions);
           } catch (error) {
-            console.error("Error loading submissions:", error)
-            Utils.showToast("Error loading submissions", "error")
-            submissionsList.innerHTML = '<p class="empty-state">Failed to load submissions</p>'
+            console.error("Error loading submissions:", error);
+            Utils.showToast("Error loading submissions", "error");
+            submissionsList.innerHTML =
+              '<p class="empty-state">Failed to load submissions</p>';
           } finally {
-            // Remove loader
-            Utils.removeLoader(submissionsList)
+            
+            Utils.removeLoader(submissionsList);
           }
-        }
+        };
 
-        // Function to render submissions list
+        
+        
         const renderSubmissionsList = (submissions) => {
           if (submissions.length === 0) {
-            submissionsList.innerHTML = '<p class="empty-state">No submissions found</p>'
-            return
+            submissionsList.innerHTML =
+              '<p class="empty-state">No submissions found</p>';
+            return;
           }
 
-          submissionsList.innerHTML = ""
+          submissionsList.innerHTML = "";
 
           submissions.forEach((submission) => {
-            const submissionTemplate = document.getElementById("submission-card-template")
-            const submissionCard = submissionTemplate.content.cloneNode(true)
-
-            submissionCard.querySelector(".submission-assignment").textContent = submission.assignment.title
-
-            // Add student name
-            const courseSpan = submissionCard.querySelector(".submission-course")
-            courseSpan.textContent = `${submission.student.name} - ${submission.assignment.course.title}`
-
-            submissionCard.querySelector(".submission-date span").textContent = Utils.formatDate(submission.submittedAt)
-
-            const statusSpan = submissionCard.querySelector(".submission-status span")
-            const marksSpan = submissionCard.querySelector(".submission-marks span:first-child")
-            const feedbackSpan = submissionCard.querySelector(".submission-marks span:last-child")
-
-            if (submission.marks !== null) {
-              statusSpan.textContent = "Graded"
-              statusSpan.classList.add("status-graded")
-              marksSpan.textContent = `${submission.marks}/${submission.assignment.maxMarks}`
-              feedbackSpan.textContent = submission.feedback || "No feedback provided"
-            } else {
-              statusSpan.textContent = "Pending"
-              statusSpan.classList.add("status-pending")
-              marksSpan.textContent = "Not graded yet"
-              feedbackSpan.textContent = "No feedback yet"
+            
+            if (!submission || !submission.assignment) {
+              console.warn("Invalid submission object found:", submission);
+              return;
             }
 
-            const viewBtn = submissionCard.querySelector(".view-submission-btn")
-            viewBtn.textContent = "Grade Submission"
+            const submissionTemplate = document.getElementById(
+              "submission-card-template"
+            );
+            const submissionCard = submissionTemplate.content.cloneNode(true);
+
+            
+            const assignmentTitle =
+              submission.assignment.title || "Unknown Assignment";
+            submissionCard.querySelector(".submission-assignment").textContent =
+              assignmentTitle;
+
+            
+            const courseSpan =
+              submissionCard.querySelector(".submission-course");
+            const studentName = submission.student
+              ? submission.student.name || "Unknown Student"
+              : "Unknown Student";
+
+            
+            let courseTitle = "Unknown Course";
+            if (
+              submission.assignment.course &&
+              typeof submission.assignment.course === "object"
+            ) {
+              courseTitle =
+                submission.assignment.course.title || "Unknown Course";
+            }
+
+            courseSpan.textContent = `${studentName} - ${courseTitle}`;
+
+            
+            const submissionDate = submission.submittedAt
+              ? Utils.formatDate(submission.submittedAt)
+              : "Unknown Date";
+            submissionCard.querySelector(".submission-date span").textContent =
+              submissionDate;
+
+            const statusSpan = submissionCard.querySelector(
+              ".submission-status span"
+            );
+            const marksSpan = submissionCard.querySelector(
+              ".submission-marks span:first-child"
+            );
+            const feedbackSpan = submissionCard.querySelector(
+              ".submission-marks span:last-child"
+            );
+
+            
+            if (submission.marks !== null && submission.marks !== undefined) {
+              statusSpan.textContent = "Graded";
+              statusSpan.classList.add("status-graded");
+
+              
+              const maxMarks = submission.assignment.maxMarks || "?";
+              marksSpan.textContent = `${submission.marks}/${maxMarks}`;
+
+              feedbackSpan.textContent =
+                submission.feedback || "No feedback provided";
+            } else {
+              statusSpan.textContent = "Pending";
+              statusSpan.classList.add("status-pending");
+              marksSpan.textContent = "Not graded yet";
+              feedbackSpan.textContent = "No feedback yet";
+            }
+
+            const viewBtn = submissionCard.querySelector(
+              ".view-submission-btn"
+            );
+            viewBtn.textContent = "Grade Submission";
             viewBtn.addEventListener("click", () => {
-              // Add loader to button
-              Utils.addButtonLoader(viewBtn)
+              
+              Utils.addButtonLoader(viewBtn);
 
-              // Show grading interface
-              UI.submissions.renderGradeSubmission(container, submission._id)
-            })
+              
+              UI.submissions.renderGradeSubmission(container, submission._id);
+            });
 
-            submissionsList.appendChild(submissionCard)
-          })
-        }
+            submissionsList.appendChild(submissionCard);
+          });
+        };
+        
+        Utils.removeLoader(container);
 
-        // Remove initial loader
-        Utils.removeLoader(container)
-
-        // Initial load
-        loadSubmissions()
+        
+        loadSubmissions();
       } catch (error) {
-        console.error("Error loading submissions:", error)
-        Utils.showToast("Error loading submissions", "error")
-        submissionsList.innerHTML = '<p class="empty-state">Failed to load submissions</p>'
+        console.error("Error loading submissions:", error);
+        Utils.showToast("Error loading submissions", "error");
+        submissionsList.innerHTML =
+          '<p class="empty-state">Failed to load submissions</p>';
 
-        // Remove loader
-        Utils.removeLoader(container)
+        
+        Utils.removeLoader(container);
       }
     },
 
     renderSubmissionDetail: async (container, submissionId) => {
-      // Show page loader
-      Utils.showPageLoader(container, "Loading submission details...")
+      Utils.showPageLoader(container, "Loading submission details...");
 
       try {
-        const submission = await API.submissions.getOne(submissionId)
+        const submission = await API.submissions.getOne(submissionId);
 
-        const submissionDetailUI = UI.renderTemplate("submission-detail-template", container)
+        const submissionDetailUI = UI.renderTemplate(
+          "submission-detail-template",
+          container
+        );
 
-        // Fill submission details
-        submissionDetailUI.querySelector("#detail-submission-assignment").textContent = submission.data.assignment.title
-        submissionDetailUI.querySelector("#detail-submission-course").textContent =
-          submission.data.assignment.course.title
-        submissionDetailUI.querySelector("#detail-submission-date").textContent = Utils.formatDate(
-          submission.data.submittedAt,
-        )
+        submissionDetailUI.querySelector(
+          "#detail-submission-assignment"
+        ).textContent = submission.data.assignment.title;
+        submissionDetailUI.querySelector(
+          "#detail-submission-course"
+        ).textContent = submission.data.assignment.course.title;
+        submissionDetailUI.querySelector(
+          "#detail-submission-date"
+        ).textContent = Utils.formatDate(submission.data.submittedAt);
 
-        const statusSpan = submissionDetailUI.querySelector("#detail-submission-status")
+        const statusSpan = submissionDetailUI.querySelector(
+          "#detail-submission-status"
+        );
         if (submission.data.marks !== null) {
-          statusSpan.textContent = "Graded"
-          statusSpan.classList.add("status-graded")
-          submissionDetailUI.querySelector("#detail-submission-marks").textContent =
-            `${submission.data.marks}/${submission.data.assignment.maxMarks}`
-          submissionDetailUI.querySelector("#detail-submission-feedback").textContent =
-            submission.data.feedback || "No feedback provided"
+          statusSpan.textContent = "Graded";
+          statusSpan.classList.add("status-graded");
+          submissionDetailUI.querySelector(
+            "#detail-submission-marks"
+          ).textContent = `${submission.data.marks}/${submission.data.assignment.maxMarks}`;
+          submissionDetailUI.querySelector(
+            "#detail-submission-feedback"
+          ).textContent = submission.data.feedback || "No feedback provided";
         } else {
-          statusSpan.textContent = "Pending"
-          statusSpan.classList.add("status-pending")
-          submissionDetailUI.querySelector("#detail-submission-marks").textContent = "Not graded yet"
-          submissionDetailUI.querySelector("#detail-submission-feedback").textContent = "No feedback yet"
+          statusSpan.textContent = "Pending";
+          statusSpan.classList.add("status-pending");
+          submissionDetailUI.querySelector(
+            "#detail-submission-marks"
+          ).textContent = "Not graded yet";
+          submissionDetailUI.querySelector(
+            "#detail-submission-feedback"
+          ).textContent = "No feedback yet";
         }
 
-        // Show submission content
-        submissionDetailUI.querySelector("#detail-submission-text").textContent =
-          submission.data.textAnswer || "No text answer provided"
+        submissionDetailUI.querySelector(
+          "#detail-submission-text"
+        ).textContent = submission.data.textAnswer || "No text answer provided";
 
-        const fileContainer = submissionDetailUI.querySelector("#detail-submission-file")
+        const fileContainer = submissionDetailUI.querySelector(
+          "#detail-submission-file"
+        );
         if (submission.data.fileUrl) {
-          const fileLink = document.createElement("a")
-          fileLink.href = submission.data.fileUrl
-          fileLink.target = "_blank"
-          fileLink.textContent = "View Submitted File"
-          fileLink.classList.add("btn", "btn-primary")
-          fileContainer.appendChild(fileLink)
+          const fileLink = document.createElement("a");
+          fileLink.href = submission.data.fileUrl;
+          fileLink.target = "_blank";
+          fileLink.textContent = "View Submitted File";
+          fileLink.classList.add("btn", "btn-primary");
+          fileContainer.appendChild(fileLink);
         } else {
-          fileContainer.textContent = "No file submitted"
+          fileContainer.textContent = "No file submitted";
         }
 
-        // Set up back button
-        const backBtn = submissionDetailUI.querySelector("#back-to-submissions")
+        const backBtn = submissionDetailUI.querySelector(
+          "#back-to-submissions"
+        );
         backBtn.addEventListener("click", (e) => {
-          e.preventDefault()
-          UI.submissions.renderSubmissions(container)
-        })
+          e.preventDefault();
+          UI.submissions.renderSubmissions(container);
+        });
       } catch (error) {
-        console.error("Error loading submission details:", error)
-        Utils.showToast("Error loading submission details", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load submission details</p>'
+        console.error("Error loading submission details:", error);
+        Utils.showToast("Error loading submission details", "error");
+        container.innerHTML =
+          '<p class="empty-state">Failed to load submission details</p>';
       }
     },
 
     renderGradeSubmission: async (container, submissionId) => {
-      // Show page loader
-      Utils.showPageLoader(container, "Loading submission for grading...")
+      Utils.showPageLoader(container, "Loading submission for grading...");
 
       try {
-        const submission = await API.submissions.getOne(submissionId)
+        const submission = await API.submissions.getOne(submissionId);
 
-        const gradeSubmissionUI = UI.renderTemplate("grade-submission-template", container)
+        const gradeSubmissionUI = UI.renderTemplate(
+          "grade-submission-template",
+          container
+        );
 
-        // Fill submission details
-        gradeSubmissionUI.querySelector("#grade-submission-assignment").textContent = submission.data.assignment.title
-        gradeSubmissionUI.querySelector("#grade-submission-student").textContent =
-          `Student: ${submission.data.student.name}`
-        gradeSubmissionUI.querySelector("#grade-submission-date").textContent = Utils.formatDate(
-          submission.data.submittedAt,
-        )
+        gradeSubmissionUI.querySelector(
+          "#grade-submission-assignment"
+        ).textContent = submission.data.assignment.title;
+        gradeSubmissionUI.querySelector(
+          "#grade-submission-student"
+        ).textContent = `Student: ${submission.data.student.name}`;
+        gradeSubmissionUI.querySelector("#grade-submission-date").textContent =
+          Utils.formatDate(submission.data.submittedAt);
 
-        // Show submission content
         gradeSubmissionUI.querySelector("#grade-submission-text").textContent =
-          submission.data.textAnswer || "No text answer provided"
+          submission.data.textAnswer || "No text answer provided";
 
-        const fileContainer = gradeSubmissionUI.querySelector("#grade-submission-file")
+        const fileContainer = gradeSubmissionUI.querySelector(
+          "#grade-submission-file"
+        );
         if (submission.data.fileUrl) {
-          const fileLink = document.createElement("a")
-          fileLink.href = submission.data.fileUrl
-          fileLink.target = "_blank"
-          fileLink.textContent = "View Submitted File"
-          fileLink.classList.add("btn", "btn-primary")
-          fileContainer.appendChild(fileLink)
+          const fileLink = document.createElement("a");
+          fileLink.href = submission.data.fileUrl;
+          fileLink.target = "_blank";
+          fileLink.textContent = "View Submitted File";
+          fileLink.classList.add("btn", "btn-primary");
+          fileContainer.appendChild(fileLink);
         } else {
-          fileContainer.textContent = "No file submitted"
+          fileContainer.textContent = "No file submitted";
         }
 
-        // Set up grading form
-        const gradeForm = gradeSubmissionUI.querySelector("#grade-submission-form")
-        const marksInput = gradeForm.querySelector("#grade-marks")
+        const gradeForm = gradeSubmissionUI.querySelector(
+          "#grade-submission-form"
+        );
+        const marksInput = gradeForm.querySelector("#grade-marks");
 
-        // Set max attribute for marks input
-        marksInput.setAttribute("max", submission.data.assignment.maxMarks)
+        marksInput.setAttribute("max", submission.data.assignment.maxMarks);
 
-        // Pre-fill form if already graded
         if (submission.data.marks !== null) {
-          marksInput.value = submission.data.marks
-          gradeForm.querySelector("#grade-feedback").value = submission.data.feedback || ""
+          marksInput.value = submission.data.marks;
+          gradeForm.querySelector("#grade-feedback").value =
+            submission.data.feedback || "";
         }
 
         gradeForm.addEventListener("submit", async (e) => {
-          e.preventDefault()
+          e.preventDefault();
 
-          // Get form elements
-          const submitBtn = gradeForm.querySelector('button[type="submit"]')
-          const formInputs = gradeForm.querySelectorAll("input, textarea")
+          const submitBtn = gradeForm.querySelector('button[type="submit"]');
+          const formInputs = gradeForm.querySelectorAll("input, textarea");
 
-          // Disable form during submission
-          submitBtn.disabled = true
-          formInputs.forEach((input) => (input.disabled = true))
+          submitBtn.disabled = true;
+          formInputs.forEach((input) => (input.disabled = true));
 
-          // Add loader to button
-          Utils.addButtonLoader(submitBtn)
+          Utils.addButtonLoader(submitBtn);
 
           try {
             const gradeData = {
               marks: marksInput.value,
               feedback: gradeForm.feedback.value,
-            }
+            };
 
-            await API.submissions.grade(submissionId, gradeData)
-            Utils.showToast("Submission graded successfully")
+            await API.submissions.grade(submissionId, gradeData);
+            Utils.showToast("Submission graded successfully");
 
-            // Show loader in container
-            Utils.showPageLoader(container, "Redirecting...")
+            Utils.showPageLoader(container, "Redirecting...");
 
-            // Redirect after a short delay
             setTimeout(() => {
-              UI.submissions.renderStudentSubmissions(container)
-            }, 500)
+              UI.submissions.renderStudentSubmissions(container);
+            }, 500);
           } catch (error) {
-            Utils.showToast(error.message, "error")
+            Utils.showToast(error.message, "error");
 
-            // Re-enable form
-            submitBtn.disabled = false
-            formInputs.forEach((input) => (input.disabled = false))
+            submitBtn.disabled = false;
+            formInputs.forEach((input) => (input.disabled = false));
 
-            // Remove loader
-            Utils.removeButtonLoader(submitBtn, "Submit Grade")
+            Utils.removeButtonLoader(submitBtn, "Submit Grade");
           }
-        })
+        });
 
-        // Set up back button
-        const backBtn = gradeSubmissionUI.querySelector("#back-to-student-submissions")
+        const backBtn = gradeSubmissionUI.querySelector(
+          "#back-to-student-submissions"
+        );
         backBtn.addEventListener("click", (e) => {
-          e.preventDefault()
-          UI.submissions.renderStudentSubmissions(container)
-        })
+          e.preventDefault();
+          UI.submissions.renderStudentSubmissions(container);
+        });
       } catch (error) {
-        console.error("Error loading submission details:", error)
-        Utils.showToast("Error loading submission details", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load submission details</p>'
+        console.error("Error loading submission details:", error);
+        Utils.showToast("Error loading submission details", "error");
+        container.innerHTML =
+          '<p class="empty-state">Failed to load submission details</p>';
       }
     },
 
     renderSubmissionsByAssignment: async (container, assignmentId) => {
-      // Show page loader
-      Utils.showPageLoader(container, "Loading submissions...")
+      Utils.showPageLoader(container, "Loading submissions...");
 
       try {
-        const assignment = await API.assignments.getOne(assignmentId)
-        const submissions = await API.submissions.getByAssignment(assignmentId)
+        const assignment = await API.assignments.getOne(assignmentId);
+        const submissions = await API.submissions.getByAssignment(assignmentId);
 
-        const studentSubmissionsUI = UI.renderTemplate("student-submissions-template", container)
+        const studentSubmissionsUI = UI.renderTemplate(
+          "student-submissions-template",
+          container
+        );
 
-        // Update page title
-        studentSubmissionsUI.querySelector(".page-header h2").textContent = `Submissions for: ${assignment.data.title}`
+        studentSubmissionsUI.querySelector(
+          ".page-header h2"
+        ).textContent = `Submissions for: ${assignment.data.title}`;
 
-        // Hide filters
-        studentSubmissionsUI.querySelector(".filter-controls").style.display = "none"
+        studentSubmissionsUI.querySelector(".filter-controls").style.display =
+          "none";
 
-        const submissionsList = studentSubmissionsUI.querySelector("#student-submissions-list")
+        const submissionsList = studentSubmissionsUI.querySelector(
+          "#student-submissions-list"
+        );
 
         if (submissions.data.length === 0) {
-          submissionsList.innerHTML = '<p class="empty-state">No submissions for this assignment yet</p>'
-          return
+          submissionsList.innerHTML =
+            '<p class="empty-state">No submissions for this assignment yet</p>';
+          return;
         }
 
-        submissionsList.innerHTML = ""
+        submissionsList.innerHTML = "";
 
         submissions.data.forEach((submission) => {
-          const submissionTemplate = document.getElementById("submission-card-template")
-          const submissionCard = submissionTemplate.content.cloneNode(true)
+          const submissionTemplate = document.getElementById(
+            "submission-card-template"
+          );
+          const submissionCard = submissionTemplate.content.cloneNode(true);
 
-          submissionCard.querySelector(".submission-assignment").textContent = assignment.data.title
+          submissionCard.querySelector(".submission-assignment").textContent =
+            assignment.data.title;
 
-          // Add student name
-          const courseSpan = submissionCard.querySelector(".submission-course")
-          courseSpan.textContent = `Student: ${submission.student.name}`
+          const courseSpan = submissionCard.querySelector(".submission-course");
+          courseSpan.textContent = `Student: ${submission.student.name}`;
 
-          submissionCard.querySelector(".submission-date span").textContent = Utils.formatDate(submission.submittedAt)
+          submissionCard.querySelector(".submission-date span").textContent =
+            Utils.formatDate(submission.submittedAt);
 
-          const statusSpan = submissionCard.querySelector(".submission-status span")
-          const marksSpan = submissionCard.querySelector(".submission-marks span:first-child")
-          const feedbackSpan = submissionCard.querySelector(".submission-marks span:last-child")
+          const statusSpan = submissionCard.querySelector(
+            ".submission-status span"
+          );
+          const marksSpan = submissionCard.querySelector(
+            ".submission-marks span:first-child"
+          );
+          const feedbackSpan = submissionCard.querySelector(
+            ".submission-marks span:last-child"
+          );
 
           if (submission.marks !== null) {
-            statusSpan.textContent = "Graded"
-            statusSpan.classList.add("status-graded")
-            marksSpan.textContent = `${submission.marks}/${assignment.data.maxMarks}`
-            feedbackSpan.textContent = submission.feedback || "No feedback provided"
+            statusSpan.textContent = "Graded";
+            statusSpan.classList.add("status-graded");
+            marksSpan.textContent = `${submission.marks}/${assignment.data.maxMarks}`;
+            feedbackSpan.textContent =
+              submission.feedback || "No feedback provided";
           } else {
-            statusSpan.textContent = "Pending"
-            statusSpan.classList.add("status-pending")
-            marksSpan.textContent = "Not graded yet"
-            feedbackSpan.textContent = "No feedback yet"
+            statusSpan.textContent = "Pending";
+            statusSpan.classList.add("status-pending");
+            marksSpan.textContent = "Not graded yet";
+            feedbackSpan.textContent = "No feedback yet";
           }
 
-          const viewBtn = submissionCard.querySelector(".view-submission-btn")
-          viewBtn.textContent = "Grade Submission"
+          const viewBtn = submissionCard.querySelector(".view-submission-btn");
+          viewBtn.textContent = "Grade Submission";
           viewBtn.addEventListener("click", () => {
-            // Add loader to button
-            Utils.addButtonLoader(viewBtn)
+            Utils.addButtonLoader(viewBtn);
 
-            // Show grading interface
-            UI.submissions.renderGradeSubmission(container, submission._id)
-          })
+            UI.submissions.renderGradeSubmission(container, submission._id);
+          });
 
-          submissionsList.appendChild(submissionCard)
-        })
+          submissionsList.appendChild(submissionCard);
+        });
 
-        // Add back button
-        const backBtn = document.createElement("button")
-        backBtn.textContent = "Back to Assignments"
-        backBtn.classList.add("btn", "btn-primary")
-        backBtn.style.marginBottom = "2rem"
+        const backBtn = document.createElement("button");
+        backBtn.textContent = "Back to Assignments";
+        backBtn.classList.add("btn", "btn-primary");
+        backBtn.style.marginBottom = "2rem";
         backBtn.addEventListener("click", () => {
-          // Add loader to button
-          Utils.addButtonLoader(backBtn)
+          Utils.addButtonLoader(backBtn);
 
-          // Go back to assignments
-          UI.assignments.renderMyAssignments(container)
-        })
+          UI.assignments.renderMyAssignments(container);
+        });
 
-        studentSubmissionsUI.insertBefore(backBtn, studentSubmissionsUI.firstChild)
+        studentSubmissionsUI.insertBefore(
+          backBtn,
+          studentSubmissionsUI.firstChild
+        );
       } catch (error) {
-        console.error("Error loading submissions:", error)
-        Utils.showToast("Error loading submissions", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load submissions</p>'
+        console.error("Error loading submissions:", error);
+        Utils.showToast("Error loading submissions", "error");
+        container.innerHTML =
+          '<p class="empty-state">Failed to load submissions</p>';
       }
     },
   },
 
-  // Profile UI
   profile: {
-    // Update the profile.renderProfile method to properly handle loading states
     renderProfile: async (container) => {
-      // Clear container and show loader
-      container.innerHTML = ""
-      Utils.showPageLoader(container, "Loading profile...")
+      const profileUI = UI.renderTemplate("profile-template", container);
 
-      // Create UI structure but don't append it yet
-      const profileUI = document.createElement("div")
-      profileUI.innerHTML = document.getElementById("profile-template").content.cloneNode(true).innerHTML
+      const loader = Utils.showLoader(container);
 
       try {
-        const response = await API.auth.getMe()
-        const user = response.user
+        const response = await API.auth.getMe();
+        const user = response.user;
 
-        // Fill profile form
-        const profileForm = profileUI.querySelector("#update-profile-form")
-        profileForm.name.value = user.name
-        profileForm.email.value = user.email
+        const profileForm = profileUI.querySelector("#update-profile-form");
+        profileForm.name.value = user.name;
+        profileForm.email.value = user.email;
 
-        // Fix role display
-        const roleInput = profileForm.querySelector("#profile-role")
-        roleInput.value = user.role.charAt(0).toUpperCase() + user.role.slice(1) // Capitalize first letter
+        const roleInput = profileForm.querySelector("#profile-role");
+        roleInput.value =
+          user.role.charAt(0).toUpperCase() + user.role.slice(1);
 
-        // Set up profile form submission
         profileForm.addEventListener("submit", async (e) => {
-          e.preventDefault()
+          e.preventDefault();
 
-          // Get form elements
-          const submitBtn = profileForm.querySelector('button[type="submit"]')
-          const formInputs = profileForm.querySelectorAll("input:not([disabled])")
+          const submitBtn = profileForm.querySelector('button[type="submit"]');
+          const formInputs = profileForm.querySelectorAll(
+            "input:not([disabled])"
+          );
 
-          // Disable form during submission
-          submitBtn.disabled = true
-          formInputs.forEach((input) => (input.disabled = true))
+          submitBtn.disabled = true;
+          formInputs.forEach((input) => (input.disabled = true));
 
-          // Add loader to button
-          Utils.addButtonLoader(submitBtn)
+          Utils.addButtonLoader(submitBtn);
 
           try {
             const profileData = {
               name: profileForm.name.value,
               email: profileForm.email.value,
-            }
+            };
 
-            await API.users.updateProfile(profileData)
+            await API.users.updateProfile(profileData);
 
-            // Update user name in Auth
-            Auth.user.name = profileData.name
-            Auth.user.email = profileData.email
+            Auth.user.name = profileData.name;
+            Auth.user.email = profileData.email;
 
-            // Update user name in header
-            document.getElementById("user-name").textContent = Auth.user.name
+            document.getElementById("user-name").textContent = Auth.user.name;
 
-            Utils.showToast("Profile updated successfully")
+            Utils.showToast("Profile updated successfully");
           } catch (error) {
-            Utils.showToast(error.message, "error")
+            Utils.showToast(error.message, "error");
           } finally {
-            // Re-enable form
-            submitBtn.disabled = false
-            formInputs.forEach((input) => (input.disabled = false))
+            submitBtn.disabled = false;
+            formInputs.forEach((input) => (input.disabled = false));
 
-            // Remove loader
-            Utils.removeButtonLoader(submitBtn, "Update Profile")
+            Utils.removeButtonLoader(submitBtn, "Update Profile");
           }
-        })
+        });
 
-        // Set up password form submission
-        const passwordForm = profileUI.querySelector("#change-password-form")
+        const passwordForm = profileUI.querySelector("#change-password-form");
         passwordForm.addEventListener("submit", async (e) => {
-          e.preventDefault()
+          e.preventDefault();
 
-          // Get form elements
-          const submitBtn = passwordForm.querySelector('button[type="submit"]')
-          const formInputs = passwordForm.querySelectorAll("input")
+          const submitBtn = passwordForm.querySelector('button[type="submit"]');
+          const formInputs = passwordForm.querySelectorAll("input");
 
-          // Disable form during submission
-          submitBtn.disabled = true
-          formInputs.forEach((input) => (input.disabled = true))
+          submitBtn.disabled = true;
+          formInputs.forEach((input) => (input.disabled = true));
 
-          // Add loader to button
-          Utils.addButtonLoader(submitBtn)
+          Utils.addButtonLoader(submitBtn);
 
           try {
             const passwordData = {
               currentPassword: passwordForm.currentPassword.value,
               newPassword: passwordForm.newPassword.value,
-            }
+            };
 
-            await API.users.updatePassword(passwordData)
-            Utils.showToast("Password updated successfully")
+            await API.users.updatePassword(passwordData);
+            Utils.showToast("Password updated successfully");
 
-            // Clear form
-            passwordForm.reset()
+            passwordForm.reset();
           } catch (error) {
-            Utils.showToast(error.message, "error")
+            Utils.showToast(error.message, "error");
           } finally {
-            // Re-enable form
-            submitBtn.disabled = false
-            formInputs.forEach((input) => (input.disabled = false))
+            submitBtn.disabled = false;
+            formInputs.forEach((input) => (input.disabled = false));
 
-            // Remove loader
-            Utils.removeButtonLoader(submitBtn, "Change Password")
+            Utils.removeButtonLoader(submitBtn, "Change Password");
           }
-        })
+        });
 
-        // Now that everything is loaded, clear the container and add the content
-        container.innerHTML = ""
-        profileUI.classList.add("content-loaded")
-        container.appendChild(profileUI)
+        Utils.removeLoader(container);
       } catch (error) {
-        console.error("Error loading profile:", error)
-        Utils.showToast("Error loading profile", "error")
-        container.innerHTML = '<p class="empty-state">Failed to load profile data</p>'
+        console.error("Error loading profile:", error);
+        Utils.showToast("Error loading profile", "error");
+
+        Utils.removeLoader(container);
       }
     },
   },
-}
+};
